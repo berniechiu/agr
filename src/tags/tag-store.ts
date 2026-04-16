@@ -1,30 +1,33 @@
-import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { getTagStorePath } from '../config.js';
 import type { TagStore } from '../types.js';
 
 export function loadTagStore(): TagStore {
   const path = getTagStorePath();
+  let content: string;
   try {
-    const content = readFileSync(path, 'utf8');
+    content = readFileSync(path, 'utf8');
+  } catch {
+    return {};
+  }
+
+  try {
     const parsed = JSON.parse(content);
     if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
       return parsed as TagStore;
     }
     return {};
-  } catch (err) {
-    if (existsSync(path)) {
-      try {
-        renameSync(path, path + '.bak');
-      } catch {
-        // ignore backup failure
-      }
-    }
+  } catch {
+    try { renameSync(path, path + '.bak'); } catch { /* backup is best-effort */ }
     return {};
   }
 }
 
 export function saveTagStore(store: TagStore): void {
-  writeFileSync(getTagStorePath(), JSON.stringify(store, null, 2) + '\n');
+  const path = getTagStorePath();
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, JSON.stringify(store, null, 2) + '\n');
 }
 
 export function addTag(sessionId: string, tag: string): void {
@@ -46,12 +49,6 @@ export function removeTag(sessionId: string, tag: string): void {
     delete store[sessionId];
   }
   saveTagStore(store);
-}
-
-export function resolveSessionId(prefix: string, allIds: string[]): string | null {
-  const matches = allIds.filter((id) => id.startsWith(prefix));
-  if (matches.length === 1) return matches[0];
-  return null;
 }
 
 export function pruneOrphanedTags(validIds: Set<string>): number {

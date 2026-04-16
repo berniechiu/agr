@@ -148,7 +148,7 @@ export async function inlinePicker(
       const tag = await prompt(`${pc.cyan('Tag name:')} `);
       if (tag) {
         addTag(session.id, tag);
-        refreshTags(allSessions ? [...sessions, ...searchPool] : sessions);
+        refreshTags(searchPool);
       }
       exitPromptMode();
       clearAndRerender();
@@ -172,7 +172,7 @@ export async function inlinePicker(
           : session.tags.find((t) => t.toLowerCase() === input.toLowerCase());
         if (tag) {
           removeTag(session.id, tag);
-          refreshTags(allSessions ? [...sessions, ...searchPool] : sessions);
+          refreshTags(searchPool);
         }
       }
       exitPromptMode();
@@ -210,12 +210,22 @@ export async function inlinePicker(
       }
 
       if (key.sequence === 't' && filter === '' && filtered.length > 0) {
-        handleTag();
+        handleTag().catch((err) => {
+          exitPromptMode();
+          cleanup();
+          console.error(`Failed to tag: ${err.message}`);
+          resolve(null);
+        });
         return;
       }
 
       if (key.sequence === 'u' && filter === '' && filtered.length > 0) {
-        handleUntag();
+        handleUntag().catch((err) => {
+          exitPromptMode();
+          cleanup();
+          console.error(`Failed to untag: ${err.message}`);
+          resolve(null);
+        });
         return;
       }
 

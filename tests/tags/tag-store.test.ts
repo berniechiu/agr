@@ -8,7 +8,6 @@ import {
   saveTagStore,
   addTag,
   removeTag,
-  resolveSessionId,
   pruneOrphanedTags,
 } from '../../src/tags/tag-store.js';
 
@@ -80,28 +79,6 @@ describe('removeTag', () => {
     removeTag('abc-123', 'tag1');
     const store = loadTagStore();
     expect(store['abc-123']).toBeUndefined();
-  });
-});
-
-describe('resolveSessionId', () => {
-  it('resolves a full UUID', () => {
-    const ids = ['aaaa1111-2222-3333-4444-555566667777', 'bbbb1111-2222-3333-4444-555566667777'];
-    expect(resolveSessionId('aaaa1111-2222-3333-4444-555566667777', ids)).toBe('aaaa1111-2222-3333-4444-555566667777');
-  });
-
-  it('resolves a UUID prefix (8+ chars)', () => {
-    const ids = ['aaaa1111-2222-3333-4444-555566667777', 'bbbb1111-2222-3333-4444-555566667777'];
-    expect(resolveSessionId('aaaa1111', ids)).toBe('aaaa1111-2222-3333-4444-555566667777');
-  });
-
-  it('returns null for ambiguous prefix', () => {
-    const ids = ['aaaa1111-2222-3333-4444-555566667777', 'aaaa1111-9999-8888-7777-666655554444'];
-    expect(resolveSessionId('aaaa1111', ids)).toBeNull();
-  });
-
-  it('returns null for no match', () => {
-    const ids = ['aaaa1111-2222-3333-4444-555566667777'];
-    expect(resolveSessionId('zzzz', ids)).toBeNull();
   });
 });
 

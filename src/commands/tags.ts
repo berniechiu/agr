@@ -13,10 +13,11 @@ export async function tagsCommand(): Promise<void> {
   for (const [sessionId, tags] of Object.entries(store)) {
     const session = sessionMap.get(sessionId);
     for (const tag of tags) {
-      if (!tagSummary.has(tag)) {
-        tagSummary.set(tag, { count: 0, projects: new Set() });
+      let entry = tagSummary.get(tag);
+      if (!entry) {
+        entry = { count: 0, projects: new Set() };
+        tagSummary.set(tag, entry);
       }
-      const entry = tagSummary.get(tag)!;
       entry.count++;
       if (session?.projectName) {
         entry.projects.add(session.projectName);

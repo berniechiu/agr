@@ -1,4 +1,4 @@
-import { createReadStream, openSync, readSync, statSync, closeSync } from 'node:fs';
+import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { basename } from 'node:path';
 import type { SessionMeta } from '../types.js';
@@ -7,7 +7,10 @@ const MAX_TITLE_LENGTH = 80;
 
 function toEpoch(value: unknown): number {
   if (typeof value === 'number') return value;
-  if (typeof value === 'string') return new Date(value).getTime();
+  if (typeof value === 'string') {
+    const ms = new Date(value).getTime();
+    return Number.isNaN(ms) ? 0 : ms;
+  }
   return 0;
 }
 
@@ -33,26 +36,6 @@ function extractFirstPromptText(message: unknown): string | null {
   return null;
 }
 
-function readLastBytes(filePath: string, byteCount: number): string {
-  const stat = statSync(filePath);
-  const size = stat.size;
-  if (size === 0) return '';
-  const readSize = Math.min(byteCount, size);
-  const buffer = Buffer.alloc(readSize);
-  const fd = openSync(filePath, 'r');
-  try {
-    readSync(fd, buffer, 0, readSize, size - readSize);
-    const raw = buffer.toString('utf8');
-    if (readSize < size) {
-      const firstNewline = raw.indexOf('\n');
-      return firstNewline === -1 ? '' : raw.slice(firstNewline + 1);
-    }
-    return raw;
-  } finally {
-    closeSync(fd);
-  }
-}
-
 export async function parseSessionFile(
   filePath: string,
   sessionId: string,
@@ -62,6 +45,7 @@ export async function parseSessionFile(
   let firstPrompt = '';
   let customTitle: string | null = null;
   let firstTimestamp = 0;
+  let lastTimestamp = 0;
   let userMessageCount = 0;
   let assistantMessageCount = 0;
   let foundFirstPrompt = false;
@@ -109,28 +93,15 @@ export async function parseSessionFile(
       assistantMessageCount++;
     }
 
-    if ((type === 'user' || type === 'assistant') && firstTimestamp === 0 && entry.timestamp) {
-      firstTimestamp = toEpoch(entry.timestamp);
+    if (entry.timestamp) {
+      const ts = toEpoch(entry.timestamp);
+      if (firstTimestamp === 0) firstTimestamp = ts;
+      lastTimestamp = ts;
     }
   }
 
   const messageCount = userMessageCount + assistantMessageCount;
   if (messageCount === 0) return null;
-
-  let lastTimestamp = firstTimestamp;
-  const tailContent = readLastBytes(filePath, 4096);
-  const tailLines = tailContent.split('\n').filter(Boolean);
-  for (let i = tailLines.length - 1; i >= 0; i--) {
-    try {
-      const entry = JSON.parse(tailLines[i]);
-      if (entry.timestamp) {
-        lastTimestamp = toEpoch(entry.timestamp);
-        break;
-      }
-    } catch {
-      continue;
-    }
-  }
 
   const projectName = cwd ? basename(cwd) : '';
 

@@ -60,14 +60,14 @@ export async function discoverSessions(): Promise<SessionMeta[]> {
   }
 
   sessions.sort((a, b) => {
-    const aCwd = a.cwd === currentDir ? 1 : 0;
-    const bCwd = b.cwd === currentDir ? 1 : 0;
-    if (aCwd !== bCwd) return bCwd - aCwd;
+    const aLocal = a.cwd === currentDir;
+    const bLocal = b.cwd === currentDir;
+    if (aLocal !== bLocal) return aLocal ? -1 : 1;
 
     if (currentBranch) {
-      const aBranch = a.gitBranch === currentBranch ? 1 : 0;
-      const bBranch = b.gitBranch === currentBranch ? 1 : 0;
-      if (aBranch !== bBranch) return bBranch - aBranch;
+      const aBranch = a.gitBranch === currentBranch;
+      const bBranch = b.gitBranch === currentBranch;
+      if (aBranch !== bBranch) return aBranch ? -1 : 1;
     }
 
     return b.lastTimestamp - a.lastTimestamp;

@@ -1,6 +1,5 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { mkdirSync } from 'node:fs';
 
 let claudeDir: string | null = null;
 let agrDir: string | null = null;
@@ -15,9 +14,7 @@ export function getClaudeDir(): string {
 }
 
 export function getAgrDir(): string {
-  const dir = agrDir ?? join(homedir(), '.agr');
-  mkdirSync(dir, { recursive: true });
-  return dir;
+  return agrDir ?? join(homedir(), '.agr');
 }
 
 export function getProjectsDir(): string {

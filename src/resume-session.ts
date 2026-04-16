@@ -8,6 +8,6 @@ export function resumeSession(session: SessionMeta): void {
       cwd: session.cwd || process.cwd(),
     });
   } catch {
-    // claude exited — this is normal
+    // Non-zero exit from claude is expected on session end
   }
 }
