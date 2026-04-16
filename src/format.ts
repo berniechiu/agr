@@ -15,18 +15,18 @@ export function formatSessionRow(session: SessionMeta, isSelected: boolean): str
   const indicator = isSelected ? pc.cyan('❯') : ' ';
   const active = session.isActive ? pc.green(' ●') : '';
   const project = pc.cyan(truncate(session.projectName, 14).padEnd(14));
-  const tagPrefix = session.tags.length > 0
-    ? pc.yellow(`[${session.tags[0]}] `)
+  const tags = session.tags.length > 0
+    ? ' ' + session.tags.map((t) => pc.yellow(`#${t}`)).join(' ')
     : '';
-  const title = truncate(tagPrefix + session.title, 45);
+  const title = truncate(session.title, 40);
   const date = pc.dim(formatDate(session.lastTimestamp).padStart(5));
   const msgs = pc.dim(`${session.messageCount} msgs`.padStart(8));
 
-  return `${indicator}${active} ${project} ${title.padEnd(45)} ${date} ${msgs}`;
+  return `${indicator}${active} ${project} ${title.padEnd(40)} ${date} ${msgs}${tags}`;
 }
 
 export function formatStatusBar(totalSessions: number, totalProjects: number): string {
   return pc.dim(
-    `${totalSessions} sessions · ${totalProjects} projects · ↑↓ navigate · type to filter · ⏎ resume`,
+    `${totalSessions} sessions · ${totalProjects} projects · ↑↓ navigate · type to filter · ⏎ resume · t tag · u untag`,
   );
 }

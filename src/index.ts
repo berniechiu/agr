@@ -4,10 +4,8 @@ import { listCommand } from './commands/list.js';
 import { searchCommand } from './commands/search.js';
 import { tagCommand } from './commands/tag.js';
 import { tagsCommand } from './commands/tags.js';
-import { untagCommand } from './commands/untag.js';
 import { statsCommand } from './commands/stats.js';
 import { cleanCommand } from './commands/clean.js';
-import { resumeCommand } from './commands/resume.js';
 
 const program = new Command();
 
@@ -30,12 +28,12 @@ program
 
 program
   .command('search <text>')
-  .description('Full-text search across all session content')
+  .description('Search session content (single word: current project, multi-word: first word is project filter)')
   .action(searchCommand);
 
 program
-  .command('tag <first> [second]')
-  .description('Tag a session or list sessions by tag')
+  .command('tag <name>')
+  .description('List sessions by tag name')
   .action(tagCommand);
 
 program
@@ -44,23 +42,13 @@ program
   .action(tagsCommand);
 
 program
-  .command('untag <sessionId> <tag>')
-  .description('Remove a tag from a session')
-  .action(untagCommand);
-
-program
   .command('stats')
   .description('Show usage statistics')
   .action(statsCommand);
 
 program
   .command('clean')
-  .description('Remove empty sessions and fix index')
+  .description('Report empty sessions and prune orphaned tags')
   .action(cleanCommand);
-
-program
-  .command('resume <idOrName>')
-  .description('Resume a session by ID prefix or name')
-  .action(resumeCommand);
 
 program.parse();

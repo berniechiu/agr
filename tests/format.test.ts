@@ -45,7 +45,7 @@ describe('formatSessionRow', () => {
   it('shows tag inline when present', () => {
     const tagged = { ...session, tags: ['AWS Audit'] };
     const row = formatSessionRow(tagged, false);
-    expect(row).toContain('[AWS Audit]');
+    expect(row).toContain('#AWS Audit');
   });
 
   it('shows active indicator', () => {

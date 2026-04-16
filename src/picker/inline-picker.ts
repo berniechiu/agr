@@ -1,13 +1,30 @@
-import { emitKeypressEvents } from 'node:readline';
+import { createInterface, emitKeypressEvents } from 'node:readline';
 import pc from 'picocolors';
 import type { SessionMeta } from '../types.js';
+import { addTag, removeTag, loadTagStore } from '../tags/tag-store.js';
 import { formatSessionRow, formatStatusBar } from '../format.js';
 
 const MAX_VISIBLE = 20;
 
 interface PickerResult {
   session: SessionMeta;
-  action: 'resume';
+}
+
+function prompt(message: string): Promise<string> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(message, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+function refreshTags(sessions: SessionMeta[]): void {
+  const store = loadTagStore();
+  for (const s of sessions) {
+    s.tags = store[s.id] ?? [];
+  }
 }
 
 export async function inlinePicker(
@@ -105,6 +122,63 @@ export async function inlinePicker(
       process.stdin.removeListener('keypress', onKeypress);
     }
 
+    function enterPromptMode(): void {
+      process.stdin.removeListener('keypress', onKeypress);
+      process.stdin.setRawMode(false);
+    }
+
+    function exitPromptMode(): void {
+      emitKeypressEvents(process.stdin);
+      process.stdin.setRawMode(true);
+      process.stdin.resume();
+      process.stdin.on('keypress', onKeypress);
+    }
+
+    function clearAndRerender(): void {
+      // Move up enough to cover picker + any prompt lines, then clear
+      const rows = process.stdout.rows || 50;
+      process.stdout.write(`\x1B[${rows}A\x1B[0J`);
+      lastLineCount = 0;
+      render();
+    }
+
+    async function handleTag(): Promise<void> {
+      const session = filtered[selectedIndex];
+      enterPromptMode();
+      const tag = await prompt(`${pc.cyan('Tag name:')} `);
+      if (tag) {
+        addTag(session.id, tag);
+        refreshTags(allSessions ? [...sessions, ...searchPool] : sessions);
+      }
+      exitPromptMode();
+      clearAndRerender();
+    }
+
+    async function handleUntag(): Promise<void> {
+      const session = filtered[selectedIndex];
+      if (session.tags.length === 0) {
+        return;
+      }
+      enterPromptMode();
+      console.log(`Tags on ${pc.cyan(session.id.slice(0, 8))}:`);
+      for (let i = 0; i < session.tags.length; i++) {
+        console.log(`  ${pc.dim(`${i + 1}.`)} ${pc.yellow(session.tags[i])}`);
+      }
+      const input = await prompt(`${pc.cyan('Remove which tag (number or name):')} `);
+      if (input) {
+        const num = parseInt(input, 10);
+        const tag = num >= 1 && num <= session.tags.length
+          ? session.tags[num - 1]
+          : session.tags.find((t) => t.toLowerCase() === input.toLowerCase());
+        if (tag) {
+          removeTag(session.id, tag);
+          refreshTags(allSessions ? [...sessions, ...searchPool] : sessions);
+        }
+      }
+      exitPromptMode();
+      clearAndRerender();
+    }
+
     function onKeypress(_ch: string | undefined, key: { name?: string; ctrl?: boolean; sequence?: string } | undefined): void {
       if (!key) return;
 
@@ -128,10 +202,20 @@ export async function inlinePicker(
       if (key.name === 'return') {
         cleanup();
         if (filtered.length > 0) {
-          resolve({ session: filtered[selectedIndex], action: 'resume' });
+          resolve({ session: filtered[selectedIndex] });
         } else {
           resolve(null);
         }
+        return;
+      }
+
+      if (key.sequence === 't' && filter === '' && filtered.length > 0) {
+        handleTag();
+        return;
+      }
+
+      if (key.sequence === 'u' && filter === '' && filtered.length > 0) {
+        handleUntag();
         return;
       }
 

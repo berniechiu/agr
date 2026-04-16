@@ -23,7 +23,20 @@ Requires Node.js >= 20.
 agr
 ```
 
-Opens an inline picker scoped to the current project folder, sorted by: current folder matches, then branch matches, then most recent. Type to filter across all projects by name, title, branch, or tag. Arrow keys to navigate. Enter to resume. Esc to exit.
+Opens an inline picker scoped to the current project folder, sorted by: current folder matches, then branch matches, then most recent. Type to filter across all projects by name, title, branch, or tag.
+
+**Picker controls:**
+
+| Key | Action |
+|-----|--------|
+| `↑↓` | Navigate sessions |
+| `⏎` | Resume selected session |
+| `t` | Tag selected session |
+| `u` | Untag selected session (shows existing tags) |
+| `Esc` | Clear filter / exit |
+| Type | Filter by project, title, branch, or tag |
+
+Tagged sessions show `#tag-name` at the end of the row.
 
 ### Search session content
 
@@ -38,37 +51,19 @@ agr search "my-app schema migration"
 
 The first word selects the project scope, remaining words search session content. Words are matched independently (AND logic). With a single word, the search is scoped to the current folder.
 
-### Tag sessions
+Search results open in the same picker with the same controls — you can resume, tag, or untag directly from results.
+
+### Tags
 
 ```bash
-# Tag a session (use UUID prefix, minimum 8 chars)
-agr tag a1b2c3d4 "auth refactor"
-
-# Tag multiple sessions with the same label
-agr tag a1b2c3d4 "sprint-12"
-agr tag e5f6a7b8 "sprint-12"
-
 # List sessions by tag (opens picker)
 agr tag "sprint-12"
 
-# List all tags
+# List all tags with session counts
 agr tags
-
-# Remove a tag
-agr untag a1b2c3d4 "auth refactor"
 ```
 
 Tags are stored in `~/.agr/tags.json` and never modify session files.
-
-### Resume directly
-
-```bash
-# By UUID prefix
-agr resume a1b2c3d4
-
-# By session name
-agr resume "fix login bug"
-```
 
 ### View stats
 
