@@ -1,6 +1,6 @@
 import { discoverSessions } from '../scanner/discovery.js';
 import { searchSessionFile } from '../search/full-text.js';
-import { inlinePicker } from '../picker/inline-picker.js';
+import { renderPicker } from '../picker/render-picker.js';
 import { resumeSession } from '../resume-session.js';
 import pc from 'picocolors';
 import type { SessionMeta } from '../types.js';
@@ -57,7 +57,7 @@ export async function searchCommand(text: string): Promise<void> {
   console.log(pc.green(`Found ${matchingSessions.length} sessions.`));
 
   const projects = new Set(matchingSessions.map((s) => s.projectName).filter(Boolean));
-  const result = await inlinePicker(matchingSessions, projects.size);
+  const result = await renderPicker(matchingSessions, projects.size);
 
   if (result) {
     resumeSession(result.session);

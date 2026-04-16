@@ -1,5 +1,5 @@
 import { discoverSessions } from '../scanner/discovery.js';
-import { inlinePicker } from '../picker/inline-picker.js';
+import { renderPicker } from '../picker/render-picker.js';
 import { resumeSession } from '../resume-session.js';
 import pc from 'picocolors';
 
@@ -17,7 +17,7 @@ export async function tagCommand(tagName: string): Promise<void> {
   }
 
   const projects = new Set(matching.map((s) => s.projectName).filter(Boolean));
-  const result = await inlinePicker(matching, projects.size);
+  const result = await renderPicker(matching, projects.size);
 
   if (result) {
     resumeSession(result.session);
