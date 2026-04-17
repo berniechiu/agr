@@ -1,5 +1,17 @@
 import { discoverSessions } from '../scanner/discovery.js';
+import { computeStats, sparkline, bar, formatDelta } from './stats-compute.js';
 import pc from 'picocolors';
+
+const LABEL_WIDTH = 20;
+const BAR_WIDTH = 20;
+const PROJECT_WIDTH = 20;
+
+function labeled(label: string, value: string, suffix?: string): string {
+  const l = label.padEnd(LABEL_WIDTH);
+  return suffix
+    ? `  ${l}${value}  ${pc.dim(suffix)}`
+    : `  ${l}${value}`;
+}
 
 export async function statsCommand(): Promise<void> {
   const sessions = await discoverSessions();
@@ -9,32 +21,49 @@ export async function statsCommand(): Promise<void> {
     return;
   }
 
-  const now = Date.now();
-  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-  const thisWeek = sessions.filter((s) => s.lastTimestamp >= weekAgo);
+  const s = computeStats(sessions);
 
-  const projectCounts = new Map<string, number>();
-  for (const s of sessions) {
-    const name = s.projectName || '(unknown)';
-    projectCounts.set(name, (projectCounts.get(name) ?? 0) + 1);
-  }
+  const delta = formatDelta(s.weekDeltaPct);
+  const deltaSuffix = s.lastWeek === 0 && s.thisWeek > 0
+    ? '(no prior week)'
+    : `(${delta.symbol} ${delta.text} vs last week)`;
 
-  const topProjects = [...projectCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+  const streakSuffix = s.longestStreak > s.currentStreak
+    ? `(best: ${s.longestStreak})`
+    : s.currentStreak > 0
+      ? '(best)'
+      : undefined;
 
-  const totalMessages = sessions.reduce((sum, s) => sum + s.messageCount, 0);
+  const lengthSuffix = s.longestMessages > s.medianMessages
+    ? `(longest: ${s.longestMessages})`
+    : undefined;
 
   console.log(pc.bold('Session Statistics'));
   console.log('');
-  console.log(`  Total sessions:    ${pc.cyan(String(sessions.length))}`);
-  console.log(`  This week:         ${pc.cyan(String(thisWeek.length))}`);
-  console.log(`  Total messages:    ${pc.cyan(String(totalMessages))}`);
-  console.log(`  Projects:          ${pc.cyan(String(projectCounts.size))}`);
+  console.log(labeled('Total sessions', pc.cyan(String(s.total))));
+  console.log(labeled('This week', pc.cyan(String(s.thisWeek)), deltaSuffix));
+  console.log(labeled(
+    'Active streak',
+    pc.cyan(`${s.currentStreak} day${s.currentStreak === 1 ? '' : 's'}`),
+    streakSuffix,
+  ));
+  console.log(labeled(
+    'Median length',
+    pc.cyan(`${s.medianMessages} msg${s.medianMessages === 1 ? '' : 's'}`),
+    lengthSuffix,
+  ));
+  console.log('');
+  console.log(labeled('Activity (14d)', pc.cyan(sparkline(s.activity14d))));
   console.log('');
   console.log(pc.bold('Top Projects'));
   console.log('');
-  for (const [name, count] of topProjects) {
-    console.log(`  ${pc.cyan(name.padEnd(25))} ${count} sessions`);
+  for (const p of s.topProjects) {
+    const name = p.name.length > PROJECT_WIDTH
+      ? p.name.slice(0, PROJECT_WIDTH - 1) + '…'
+      : p.name.padEnd(PROJECT_WIDTH);
+    const barStr = bar(p.barRatio, BAR_WIDTH);
+    const count = String(p.count).padStart(4);
+    const share = `(${Math.round(p.share * 100)}%)`;
+    console.log(`  ${pc.cyan(name)}  ${barStr}  ${count}  ${pc.dim(share)}`);
   }
 }

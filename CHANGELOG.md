@@ -8,6 +8,7 @@
 - **Branch on session rows** — each row now shows its git branch on a second dim line under the title. `HEAD` and detached-head states are filtered out.
 - **Local rename** — press `Ctrl+R` in the picker to rename a session. Overrides are stored in `~/.agr/titles.json` and take precedence over Claude Code's `/rename` title and the auto-derived first-prompt title. Empty input clears the override. agr never writes to `~/.claude`.
 - **Title scrubbing** — `custom-title` entries written by Claude Code are now run through the XML/caveat stripper, so titles generated from a slash-command transcript (e.g. `<local-command-caveat>…`) render cleanly instead of leaking wrapper tags.
+- **Redesigned `agr stats`** — week-over-week delta on the weekly count, current and longest active streak, median and longest session length, a 14-day activity sparkline, and top projects with proportional bars and percentage share. Removed the vanity `Total messages` and standalone `Projects` count.
 
 ### Changed
 

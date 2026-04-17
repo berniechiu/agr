@@ -79,7 +79,7 @@ Press `Ctrl+R` in the picker to rename a session. Overrides are stored in `~/.ag
 agr stats
 ```
 
-Shows total sessions, this week's activity, total messages, and top projects.
+Shows total sessions, this week with week-over-week delta, active/best streak, median/longest session length, a 14-day activity sparkline, and top projects with proportional bars.
 
 ### Clean up
 
