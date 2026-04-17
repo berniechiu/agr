@@ -120,6 +120,42 @@ describe('SessionPicker', () => {
     expect(frame).not.toContain('project-1');
   });
 
+  it('#<tag> filter scopes to tag matches only', async () => {
+    const sessions = makeSessions(4);
+    sessions[0].tags = ['sprint-12'];
+    sessions[1].tags = ['sprint-13'];
+    sessions[2].title = 'mentions sprint in title';
+    const { lastFrame, stdin } = render(
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
+    );
+
+    await typeChars(stdin, '#sprint');
+    await delay();
+
+    const frame = lastFrame()!;
+    expect(frame).toContain('project-0');
+    expect(frame).toContain('project-1');
+    expect(frame).not.toContain('project-2');
+    expect(frame).not.toContain('project-3');
+  });
+
+  it('bare # filter lists only tagged sessions', async () => {
+    const sessions = makeSessions(3);
+    sessions[0].tags = ['foo'];
+    sessions[2].tags = ['bar'];
+    const { lastFrame, stdin } = render(
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
+    );
+
+    await typeChars(stdin, '#');
+    await delay();
+
+    const frame = lastFrame()!;
+    expect(frame).toContain('project-0');
+    expect(frame).not.toContain('project-1');
+    expect(frame).toContain('project-2');
+  });
+
   it('clears filter on escape', async () => {
     const sessions = makeSessions(3);
     const { lastFrame, stdin } = render(

@@ -9,6 +9,7 @@
 - **Local rename** — press `Ctrl+R` in the picker to rename a session. Overrides are stored in `~/.agr/titles.json` and take precedence over Claude Code's `/rename` title and the auto-derived first-prompt title. Empty input clears the override. agr never writes to `~/.claude`.
 - **Title scrubbing** — `custom-title` entries written by Claude Code are now run through the XML/caveat stripper, so titles generated from a slash-command transcript (e.g. `<local-command-caveat>…`) render cleanly instead of leaking wrapper tags.
 - **Redesigned `agr stats`** — week-over-week delta on the weekly count, current and longest active streak, median and longest session length, a 14-day activity sparkline, and top projects with proportional bars and percentage share. Removed the vanity `Total messages` and standalone `Projects` count.
+- **Tag-scoped picker filter** — typing `#foo` in the picker narrows to sessions whose tags match `foo`; a bare `#` lists all tagged sessions. Other queries continue to match project, title, branch, and tag text.
 
 ### Changed
 

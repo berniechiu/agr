@@ -37,6 +37,7 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 | `Ctrl+R` | Rename selected session (local to agr — never modifies `~/.claude`) |
 | `Esc` | Clear filter / exit |
 | Type | Filter by project, title, branch, or tag |
+| `#tag` | Narrow to sessions with a matching tag (bare `#` lists all tagged sessions) |
 
 The preview shows session metadata (project, branch, id, start/end, duration, tags, cwd), the full first prompt, and the last few user/assistant messages. Message content is parsed only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
 

@@ -220,6 +220,11 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
     ? sessionList
     : searchPool.filter((s) => {
         const lower = filter.toLowerCase();
+        if (lower.startsWith('#')) {
+          const needle = lower.slice(1);
+          if (needle === '') return s.tags.length > 0;
+          return s.tags.some((t) => t.toLowerCase().includes(needle));
+        }
         const searchable = [
           s.projectName,
           s.title,
@@ -374,7 +379,7 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
 
       <Text> </Text>
       <Text dimColor>
-        ↑↓ navigate · type to filter · ⎵ preview · ⏎ resume · ^T tag · ^U untag · ^R rename
+        ↑↓ navigate · type to filter (#tag) · ⎵ preview · ⏎ resume · ^T tag · ^U untag · ^R rename
       </Text>
     </Box>
   );
