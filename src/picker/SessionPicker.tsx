@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import type { SessionMeta } from '../types.js';
 import { addTag, removeTag, loadTagStore } from '../tags/tag-store.js';
 import { truncate, formatDate } from '../format.js';
+import { SessionPreview } from './SessionPreview.js';
 
 const MAX_VISIBLE = 20;
 
@@ -17,7 +18,7 @@ interface SessionPickerProps {
   onSelect: (result: PickerResult | null) => void;
 }
 
-type Mode = 'browse' | 'tagging' | 'untagging';
+type Mode = 'browse' | 'tagging' | 'untagging' | 'preview';
 
 function SessionRow({ session, isSelected }: { session: SessionMeta; isSelected: boolean }) {
   const project = truncate(session.projectName, 14).padEnd(14);
@@ -120,6 +121,16 @@ function UntagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => 
   );
 }
 
+function useTerminalWidth(): number {
+  const [cols, setCols] = useState(process.stdout.columns || 80);
+  useEffect(() => {
+    const onResize = () => setCols(process.stdout.columns || 80);
+    process.stdout.on('resize', onResize);
+    return () => { process.stdout.off('resize', onResize); };
+  }, []);
+  return cols;
+}
+
 export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }: SessionPickerProps) {
   const { exit } = useApp();
   const searchPool = allSessions ?? sessions;
@@ -127,6 +138,7 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [mode, setMode] = useState<Mode>('browse');
   const [sessionList, setSessionList] = useState(sessions);
+  const termCols = useTerminalWidth();
 
   const filtered = filter === ''
     ? sessionList
@@ -213,6 +225,11 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
       return;
     }
 
+    if (ch === ' ' && filter === '' && filtered.length > 0) {
+      setMode('preview');
+      return;
+    }
+
     if (ch && ch.length === 1 && ch >= ' ' && !key.ctrl && !key.meta) {
       setFilter((prev) => prev + ch);
       setSelectedIndex(0);
@@ -227,6 +244,16 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
 
   if (mode === 'untagging' && currentSession) {
     return <UntagPrompt session={currentSession} onDone={handleTagDone} />;
+  }
+
+  if (mode === 'preview' && currentSession) {
+    return (
+      <PreviewView
+        session={currentSession}
+        width={termCols}
+        onDone={() => setMode('browse')}
+      />
+    );
   }
 
   return (
@@ -248,8 +275,32 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
 
       <Text> </Text>
       <Text dimColor>
-        {sessionList.length} sessions · {totalProjects} projects · ↑↓ navigate · type to filter · ⏎ resume · ^T tag · ^U untag
+        {sessionList.length} sessions · {totalProjects} projects · ↑↓ navigate · type to filter · ⎵ preview · ⏎ resume · ^T tag · ^U untag
       </Text>
+    </Box>
+  );
+}
+
+function PreviewView({
+  session,
+  width,
+  onDone,
+}: {
+  session: SessionMeta;
+  width: number;
+  onDone: () => void;
+}) {
+  useInput((_ch, key) => {
+    if (key.escape || key.return) {
+      onDone();
+    }
+  });
+
+  return (
+    <Box flexDirection="column">
+      <SessionPreview session={session} width={width} />
+      <Text> </Text>
+      <Text dimColor>Esc/⏎ back to list</Text>
     </Box>
   );
 }

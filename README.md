@@ -31,10 +31,13 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 |-----|--------|
 | `↑↓` | Navigate sessions |
 | `⏎` | Resume selected session |
+| `Space` | Preview selected session (when filter is empty) |
 | `Ctrl+T` | Tag selected session |
 | `Ctrl+U` | Untag selected session (shows existing tags) |
 | `Esc` | Clear filter / exit |
 | Type | Filter by project, title, branch, or tag |
+
+The preview shows session metadata, the full first prompt, and the last few user/assistant messages. Parsing happens only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
 
 Tagged sessions show `#tag-name` at the end of the row.
 
