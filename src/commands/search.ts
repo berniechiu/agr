@@ -56,8 +56,7 @@ export async function searchCommand(text: string): Promise<void> {
 
   console.log(pc.green(`Found ${matchingSessions.length} sessions.`));
 
-  const projects = new Set(matchingSessions.map((s) => s.projectName).filter(Boolean));
-  const result = await renderPicker(matchingSessions, projects.size);
+  const result = await renderPicker(matchingSessions);
 
   if (result) {
     resumeSession(result.session);

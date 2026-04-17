@@ -2,10 +2,23 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import type { SessionMeta } from '../types.js';
 import { addTag, removeTag, loadTagStore } from '../tags/tag-store.js';
-import { truncate, formatDate } from '../format.js';
+import { truncate, formatDate, cleanMessageText, isMeaningfulBranch } from '../format.js';
 import { SessionPreview } from './SessionPreview.js';
 
-const MAX_VISIBLE = 20;
+const MAX_VISIBLE = 14;
+
+if (typeof process.stdout.setMaxListeners === 'function') {
+  process.stdout.setMaxListeners(50);
+}
+
+const titleCache = new Map<string, string>();
+function displayTitle(session: SessionMeta): string {
+  const cached = titleCache.get(session.id);
+  if (cached !== undefined) return cached;
+  const cleaned = cleanMessageText(session.title) || '(untitled)';
+  titleCache.set(session.id, cleaned);
+  return cleaned;
+}
 
 export interface PickerResult {
   session: SessionMeta;
@@ -13,31 +26,56 @@ export interface PickerResult {
 
 interface SessionPickerProps {
   sessions: SessionMeta[];
-  totalProjects: number;
   allSessions?: SessionMeta[];
   onSelect: (result: PickerResult | null) => void;
 }
 
 type Mode = 'browse' | 'tagging' | 'untagging' | 'preview';
 
+const PROJECT_WIDTH = 14;
+const TITLE_WIDTH = 48;
+const CARET_WIDTH = 2;
+const ACTIVE_WIDTH = 2;
+const BRANCH_INDENT = CARET_WIDTH + ACTIVE_WIDTH + PROJECT_WIDTH + 1;
+
 function SessionRow({ session, isSelected }: { session: SessionMeta; isSelected: boolean }) {
-  const project = truncate(session.projectName, 14).padEnd(14);
-  const title = truncate(session.title, 40).padEnd(40);
+  const project = truncate(session.projectName || '—', PROJECT_WIDTH).padEnd(PROJECT_WIDTH);
+  const title = truncate(displayTitle(session), TITLE_WIDTH).padEnd(TITLE_WIDTH);
   const date = formatDate(session.lastTimestamp).padStart(5);
   const msgs = `${session.messageCount} msgs`.padStart(8);
+  const branchLabel = isMeaningfulBranch(session.gitBranch)
+    ? truncate(session.gitBranch, TITLE_WIDTH)
+    : null;
 
   return (
-    <Box>
-      <Text color="cyan">{isSelected ? '❯' : ' '}</Text>
-      {session.isActive && <Text color="green"> ●</Text>}
-      <Text> </Text>
-      <Text color="cyan">{project}</Text>
-      <Text> {title} </Text>
-      <Text dimColor>{date}</Text>
-      <Text> </Text>
-      <Text dimColor>{msgs}</Text>
-      {session.tags.length > 0 && (
-        <Text> {session.tags.map((t) => `#${t}`).join(' ')}</Text>
+    <Box flexDirection="column">
+      <Box>
+        <Box width={CARET_WIDTH}>
+          <Text color="cyan">{isSelected ? '❯ ' : '  '}</Text>
+        </Box>
+        <Box width={ACTIVE_WIDTH}>
+          {session.isActive ? <Text color="green">● </Text> : <Text>  </Text>}
+        </Box>
+        <Box width={PROJECT_WIDTH + 1}>
+          <Text color="cyan">{project}</Text>
+        </Box>
+        <Box width={TITLE_WIDTH + 1}>
+          <Text bold={isSelected}>{title}</Text>
+        </Box>
+        <Box width={6}>
+          <Text dimColor>{date}</Text>
+        </Box>
+        <Box width={9}>
+          <Text dimColor>{msgs}</Text>
+        </Box>
+        {session.tags.length > 0 && (
+          <Text color="yellow"> {session.tags.map((t) => `#${t}`).join(' ')}</Text>
+        )}
+      </Box>
+      {branchLabel && (
+        <Box paddingLeft={BRANCH_INDENT}>
+          <Text dimColor>⎇ {branchLabel}</Text>
+        </Box>
       )}
     </Box>
   );
@@ -131,7 +169,7 @@ function useTerminalWidth(): number {
   return cols;
 }
 
-export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }: SessionPickerProps) {
+export function SessionPicker({ sessions, allSessions, onSelect }: SessionPickerProps) {
   const { exit } = useApp();
   const searchPool = allSessions ?? sessions;
   const [filter, setFilter] = useState('');
@@ -275,7 +313,7 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
 
       <Text> </Text>
       <Text dimColor>
-        {sessionList.length} sessions · {totalProjects} projects · ↑↓ navigate · type to filter · ⎵ preview · ⏎ resume · ^T tag · ^U untag
+        ↑↓ navigate · type to filter · ⎵ preview · ⏎ resume · ^T tag · ^U untag
       </Text>
     </Box>
   );

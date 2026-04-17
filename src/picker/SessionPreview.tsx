@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import type { SessionMeta } from '../types.js';
 import { getRecentMessages, type RecentMessage } from '../scanner/messages.js';
-import { formatDateTime, formatDuration, formatRelative } from '../format.js';
+import { cleanMessageBlock, formatDateTime, formatDuration, formatRelative, isMeaningfulBranch } from '../format.js';
 
 interface SessionPreviewProps {
   session: SessionMeta;
@@ -13,22 +13,6 @@ const RECENT_COUNT = 4;
 const SNIPPET_LINES = 4;
 const MAX_TEXT_WIDTH = 100;
 const LABEL_WIDTH = 9;
-
-function cleanMessageText(text: string): string {
-  let out = text;
-  out = out.replace(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/g, '$1');
-  out = out.replace(/<local-command-stderr>([\s\S]*?)<\/local-command-stderr>/g, '$1');
-  out = out.replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/g, '');
-  out = out.replace(/<command-name>([\s\S]*?)<\/command-name>/g, '$1');
-  out = out.replace(/<command-message>[\s\S]*?<\/command-message>/g, '');
-  out = out.replace(/<command-args>([\s\S]*?)<\/command-args>/g, (_m, args) => {
-    const a = String(args).trim();
-    return a.length > 0 ? ` ${a}` : '';
-  });
-  out = out.replace(/<[^>]+>/g, '');
-  out = out.replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
-  return out;
-}
 
 function wrapText(text: string, maxWidth: number, maxLines: number): string[] {
   if (maxWidth <= 0) return [];
@@ -98,7 +82,7 @@ function Blockquote({ lines }: { lines: string[] }) {
 }
 
 function MessageBlock({ msg, maxWidth }: { msg: RecentMessage; maxWidth: number }) {
-  const cleaned = cleanMessageText(msg.text) || '(empty)';
+  const cleaned = cleanMessageBlock(msg.text) || '(empty)';
   const lines = wrapText(cleaned, maxWidth - 2, SNIPPET_LINES);
   const isUser = msg.role === 'user';
   const roleColor = isUser ? 'cyan' : 'green';
@@ -141,7 +125,7 @@ export function SessionPreview({ session, width }: SessionPreviewProps) {
   }, [session.filePath]);
 
   const duration = formatDuration(session.firstTimestamp, session.lastTimestamp);
-  const firstPromptClean = cleanMessageText(session.firstPrompt || '');
+  const firstPromptClean = cleanMessageBlock(session.firstPrompt || '');
   const firstPromptLines = firstPromptClean.length > 0
     ? wrapText(firstPromptClean, contentWidth - 2, 6)
     : ['(no prompt captured)'];
@@ -156,7 +140,7 @@ export function SessionPreview({ session, width }: SessionPreviewProps) {
             {session.isActive && <Text color="green">  ● active</Text>}
           </Box>
         </KeyValue>
-        {session.gitBranch && (
+        {isMeaningfulBranch(session.gitBranch) && (
           <KeyValue label="branch">
             <Text color="magenta">{session.gitBranch}</Text>
           </KeyValue>

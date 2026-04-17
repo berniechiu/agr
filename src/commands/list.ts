@@ -15,8 +15,7 @@ export async function listCommand(): Promise<void> {
   const localSessions = sessions.filter((s) => s.cwd === cwd);
   const initial = localSessions.length > 0 ? localSessions : sessions;
 
-  const projects = new Set(sessions.map((s) => s.projectName).filter(Boolean));
-  const result = await renderPicker(initial, projects.size, sessions);
+  const result = await renderPicker(initial, sessions);
 
   if (result) {
     resumeSession(result.session);

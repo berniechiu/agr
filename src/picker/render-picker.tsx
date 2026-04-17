@@ -5,7 +5,6 @@ import type { SessionMeta } from '../types.js';
 
 export async function renderPicker(
   sessions: SessionMeta[],
-  totalProjects: number,
   allSessions?: SessionMeta[],
 ): Promise<PickerResult | null> {
   if (sessions.length === 0) return null;
@@ -16,7 +15,6 @@ export async function renderPicker(
   const app = render(
     <SessionPicker
       sessions={sessions}
-      totalProjects={totalProjects}
       allSessions={allSessions}
       onSelect={(r) => { result = r; }}
     />,

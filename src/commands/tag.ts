@@ -16,8 +16,7 @@ export async function tagCommand(tagName: string): Promise<void> {
     return;
   }
 
-  const projects = new Set(matching.map((s) => s.projectName).filter(Boolean));
-  const result = await renderPicker(matching, projects.size);
+  const result = await renderPicker(matching);
 
   if (result) {
     resumeSession(result.session);

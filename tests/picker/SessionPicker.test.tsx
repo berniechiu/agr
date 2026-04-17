@@ -9,6 +9,8 @@ const ARROW_UP = '\x1B[A';
 const ENTER = '\r';
 const ESCAPE = '\x1B';
 const BACKSPACE = '\x7F';
+const CTRL_T = '\x14';
+const CTRL_U = '\x15';
 
 function makeSessions(count: number): SessionMeta[] {
   return Array.from({ length: count }, (_, i) => ({
@@ -44,24 +46,23 @@ describe('SessionPicker', () => {
     onSelect = vi.fn();
   });
 
-  it('renders session list with filter bar and status bar', () => {
+  it('renders session list with filter bar and footer hints', () => {
     const sessions = makeSessions(3);
     const { lastFrame } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
     const frame = lastFrame()!;
     expect(frame).toContain('>');
     expect(frame).toContain('project-0');
     expect(frame).toContain('project-1');
     expect(frame).toContain('project-2');
-    expect(frame).toContain('sessions');
     expect(frame).toContain('navigate');
   });
 
   it('shows selection indicator on first item', () => {
     const sessions = makeSessions(3);
     const { lastFrame } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
     const frame = lastFrame()!;
     expect(frame).toContain('❯');
@@ -70,7 +71,7 @@ describe('SessionPicker', () => {
   it('navigates down with arrow key', async () => {
     const sessions = makeSessions(3);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
@@ -86,7 +87,7 @@ describe('SessionPicker', () => {
   it('navigates up with arrow key', async () => {
     const sessions = makeSessions(3);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
@@ -106,7 +107,7 @@ describe('SessionPicker', () => {
   it('filters sessions by typing', async () => {
     const sessions = makeSessions(5);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={5} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await typeChars(stdin, 'project-3');
@@ -121,7 +122,7 @@ describe('SessionPicker', () => {
   it('clears filter on escape', async () => {
     const sessions = makeSessions(3);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await typeChars(stdin, 'xyz');
@@ -137,7 +138,7 @@ describe('SessionPicker', () => {
   it('selects session on enter', async () => {
     const sessions = makeSessions(3);
     const { stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
@@ -154,7 +155,7 @@ describe('SessionPicker', () => {
   it('selects null on escape with no filter', async () => {
     const sessions = makeSessions(3);
     const { stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
@@ -167,7 +168,7 @@ describe('SessionPicker', () => {
   it('handles backspace in filter', async () => {
     const sessions = makeSessions(3);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={3} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await typeChars(stdin, 'abc');
@@ -183,7 +184,7 @@ describe('SessionPicker', () => {
     const sessions = makeSessions(1);
     sessions[0].tags = ['important', 'review'];
     const { lastFrame } = render(
-      <SessionPicker sessions={sessions} totalProjects={1} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
     const frame = lastFrame()!;
     expect(frame).toContain('#important');
@@ -194,35 +195,35 @@ describe('SessionPicker', () => {
     const sessions = makeSessions(1);
     sessions[0].isActive = true;
     const { lastFrame } = render(
-      <SessionPicker sessions={sessions} totalProjects={1} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
     const frame = lastFrame()!;
     expect(frame).toContain('●');
   });
 
-  it('enters tag mode on t key', async () => {
+  it('enters tag mode on Ctrl+T', async () => {
     const sessions = makeSessions(1);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={1} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
-    stdin.write('t');
+    stdin.write(CTRL_T);
     await delay();
 
     const frame = lastFrame()!;
     expect(frame).toContain('Tag name:');
   });
 
-  it('enters untag mode on u key when session has tags', async () => {
+  it('enters untag mode on Ctrl+U when session has tags', async () => {
     const sessions = makeSessions(1);
     sessions[0].tags = ['mytag'];
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={1} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
-    stdin.write('u');
+    stdin.write(CTRL_U);
     await delay();
 
     const frame = lastFrame()!;
@@ -233,16 +234,14 @@ describe('SessionPicker', () => {
   it('does not enter untag mode when session has no tags', async () => {
     const sessions = makeSessions(1);
     const { lastFrame, stdin } = render(
-      <SessionPicker sessions={sessions} totalProjects={1} onSelect={onSelect} />,
+      <SessionPicker sessions={sessions} onSelect={onSelect} />,
     );
 
     await delay();
-    stdin.write('u');
+    stdin.write(CTRL_U);
     await delay();
 
     const frame = lastFrame()!;
     expect(frame).not.toContain('Remove which tag');
-    // 'u' gets added to the filter since there are no tags
-    expect(frame).toContain('u');
   });
 });
