@@ -12,7 +12,7 @@ const program = new Command();
 program
   .name('agr')
   .description('Claude Code session browser')
-  .version('0.1.0')
+  .version('0.2.0')
   .option('--base-dir <path>', 'Override base directory (for testing)')
   .hook('preAction', (thisCommand) => {
     const opts = thisCommand.optsWithGlobals();

@@ -2,7 +2,19 @@
 
 A standalone CLI for browsing, searching, tagging, and resuming Claude Code sessions.
 
-Claude Code's built-in `--resume` shows only ~10 recent sessions and relies on a session index that silently goes stale. `agr` scans `.jsonl` session files directly from `~/.claude/projects/`, presents them in an inline fuzzy-filter picker, and lets you resume with a single keypress.
+Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.jsonl` session files directly from `~/.claude/projects/`, presents them in an inline fuzzy-filter picker, and lets you resume with a single keypress.
+
+## `agr` vs. `claude --resume`
+
+| Capability | `claude --resume` | `agr` |
+|---|---|---|
+| Scope | Current directory by default; `Ctrl+A` to show all projects | All projects by default, ranked by current-folder + branch |
+| Preview before resume | Prompt snippets | `Space` shows full metadata (project, branch, duration, cwd, tags), full first prompt, and last few user/assistant messages |
+| Tagging | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
+| Tag filter | — | `#tag` narrows to tagged sessions; bare `#` lists all tagged |
+| Full-text search | — | `agr search "<text>"` streams session content |
+| Stats | — | `agr stats` — weekly delta, streaks, median/longest length, 14-day sparkline, top projects |
+| Cleanup | — | `agr clean` reports empty sessions and prunes orphaned tags/titles |
 
 ## Install
 
@@ -14,6 +26,14 @@ npm link
 ```
 
 Requires Node.js >= 20.
+
+## Quick start
+
+```bash
+agr
+```
+
+That's it — type to filter, `⏎` to resume. Everything else below is optional.
 
 ## Usage
 
