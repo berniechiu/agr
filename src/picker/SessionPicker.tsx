@@ -82,7 +82,7 @@ function SessionRow({ session, isSelected }: { session: SessionMeta; isSelected:
   );
 }
 
-function TagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => void }) {
+function TagPrompt({ session, onDone }: { session: SessionMeta; onDone: (id: string) => void }) {
   const [input, setInput] = useState('');
 
   useInput((ch, key) => {
@@ -90,18 +90,18 @@ function TagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => vo
       if (input.length > 0) {
         addTag(session.id, input);
       }
-      onDone();
+      onDone(session.id);
       return;
     }
     if (key.escape) {
-      onDone();
+      onDone(session.id);
       return;
     }
-    if (key.backspace) {
+    if (key.backspace || key.delete) {
       setInput((prev) => prev.slice(0, -1));
       return;
     }
-    if (ch && ch.length === 1 && ch >= ' ') {
+    if (ch && ch.length === 1 && ch >= ' ' && !key.ctrl && !key.meta) {
       setInput((prev) => prev + ch);
     }
   });
@@ -115,18 +115,18 @@ function TagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => vo
   );
 }
 
-function RenamePrompt({ session, onDone }: { session: SessionMeta; onDone: () => void }) {
+function RenamePrompt({ session, onDone }: { session: SessionMeta; onDone: (id: string) => void }) {
   const [input, setInput] = useState('');
   const currentTitle = displayTitle(session);
 
   useInput((ch, key) => {
     if (key.return) {
       setTitle(session.id, input);
-      onDone();
+      onDone(session.id);
       return;
     }
     if (key.escape) {
-      onDone();
+      onDone(session.id);
       return;
     }
     if (key.backspace || key.delete) {
@@ -147,12 +147,12 @@ function RenamePrompt({ session, onDone }: { session: SessionMeta; onDone: () =>
         <Text>{input}</Text>
         <Text dimColor>_</Text>
       </Box>
-      <Text dimColor>⏎ save · Esc cancel · (empty ⏎ clears override)</Text>
+      <Text dimColor>⏎ save · Esc cancel · (blank ⏎ clears override)</Text>
     </Box>
   );
 }
 
-function UntagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => void }) {
+function UntagPrompt({ session, onDone }: { session: SessionMeta; onDone: (id: string) => void }) {
   const [input, setInput] = useState('');
 
   useInput((ch, key) => {
@@ -166,18 +166,18 @@ function UntagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => 
           removeTag(session.id, tag);
         }
       }
-      onDone();
+      onDone(session.id);
       return;
     }
     if (key.escape) {
-      onDone();
+      onDone(session.id);
       return;
     }
-    if (key.backspace) {
+    if (key.backspace || key.delete) {
       setInput((prev) => prev.slice(0, -1));
       return;
     }
-    if (ch && ch.length === 1 && ch >= ' ') {
+    if (ch && ch.length === 1 && ch >= ' ' && !key.ctrl && !key.meta) {
       setInput((prev) => prev + ch);
     }
   });
@@ -233,33 +233,31 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
   const visible = filtered.slice(0, MAX_VISIBLE);
   const clampedIndex = Math.min(selectedIndex, Math.max(0, filtered.length - 1));
 
-  const refreshTags = useCallback(() => {
+  const refreshTags = useCallback((id: string) => {
     const store = loadTagStore();
-    const updated = sessionList.map((s) => ({
-      ...s,
-      tags: store[s.id] ?? [],
-    }));
-    setSessionList(updated);
-  }, [sessionList]);
+    const nextTags = store[id] ?? [];
+    setSessionList((prev) => prev.map((s) =>
+      s.id === id && s.tags !== nextTags ? { ...s, tags: nextTags } : s,
+    ));
+  }, []);
 
-  const refreshTitles = useCallback(() => {
+  const refreshTitles = useCallback((id: string) => {
     const store = loadTitleStore();
-    const updated = sessionList.map((s) => {
-      const override = store[s.id];
-      const next = override ?? s.firstPrompt;
-      titleCache.delete(s.id);
-      return { ...s, title: next };
-    });
-    setSessionList(updated);
-  }, [sessionList]);
+    titleCache.delete(id);
+    setSessionList((prev) => prev.map((s) => {
+      if (s.id !== id) return s;
+      const next = store[id] ?? s.baseTitle;
+      return s.title === next ? s : { ...s, title: next };
+    }));
+  }, []);
 
-  const handleTagDone = useCallback(() => {
-    refreshTags();
+  const handleTagDone = useCallback((id: string) => {
+    refreshTags(id);
     setMode('browse');
   }, [refreshTags]);
 
-  const handleRenameDone = useCallback(() => {
-    refreshTitles();
+  const handleRenameDone = useCallback((id: string) => {
+    refreshTitles(id);
     setMode('browse');
   }, [refreshTitles]);
 

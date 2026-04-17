@@ -41,13 +41,6 @@ export function setTitle(sessionId: string, title: string): void {
   saveTitleStore(store);
 }
 
-export function clearTitle(sessionId: string): void {
-  const store = loadTitleStore();
-  if (!(sessionId in store)) return;
-  delete store[sessionId];
-  saveTitleStore(store);
-}
-
 export function pruneOrphanedTitles(validIds: Set<string>): number {
   const store = loadTitleStore();
   let pruned = 0;

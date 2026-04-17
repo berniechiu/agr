@@ -18,6 +18,7 @@ function makeSessions(count: number): SessionMeta[] {
     projectName: `project-${i}`,
     cwd: `/home/user/project-${i}`,
     title: `Session title ${i}`,
+    baseTitle: `Session title ${i}`,
     firstPrompt: `First prompt ${i}`,
     firstTimestamp: 1700000000000 + i * 100000,
     lastTimestamp: 1700000070000 + i * 100000,

@@ -108,12 +108,15 @@ export async function parseSessionFile(
 
   const projectName = cwd ? basename(cwd) : '';
 
+  const baseTitle = customTitle ?? firstPrompt;
+
   return {
     id: sessionId,
     projectName,
     cwd,
     gitBranch,
-    title: customTitle ?? firstPrompt,
+    title: baseTitle,
+    baseTitle,
     firstPrompt,
     firstTimestamp,
     lastTimestamp,

@@ -6,6 +6,7 @@ export interface SessionMeta {
   cwd: string;
   gitBranch?: string;
   title: string;
+  baseTitle: string;
   firstPrompt: string;
   firstTimestamp: number;
   lastTimestamp: number;
