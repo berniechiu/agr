@@ -200,12 +200,12 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
       return;
     }
 
-    if (ch === 't' && filter === '' && filtered.length > 0) {
+    if (key.ctrl && ch === 't' && filtered.length > 0) {
       setMode('tagging');
       return;
     }
 
-    if (ch === 'u' && filter === '' && filtered.length > 0) {
+    if (key.ctrl && ch === 'u' && filtered.length > 0) {
       const session = filtered[clampedIndex];
       if (session.tags.length > 0) {
         setMode('untagging');
@@ -213,7 +213,7 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
       return;
     }
 
-    if (ch && ch.length === 1 && ch >= ' ') {
+    if (ch && ch.length === 1 && ch >= ' ' && !key.ctrl && !key.meta) {
       setFilter((prev) => prev + ch);
       setSelectedIndex(0);
     }
@@ -248,7 +248,7 @@ export function SessionPicker({ sessions, totalProjects, allSessions, onSelect }
 
       <Text> </Text>
       <Text dimColor>
-        {sessionList.length} sessions · {totalProjects} projects · ↑↓ navigate · type to filter · ⏎ resume · t tag · u untag
+        {sessionList.length} sessions · {totalProjects} projects · ↑↓ navigate · type to filter · ⏎ resume · ^T tag · ^U untag
       </Text>
     </Box>
   );

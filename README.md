@@ -31,8 +31,8 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 |-----|--------|
 | `↑↓` | Navigate sessions |
 | `⏎` | Resume selected session |
-| `t` | Tag selected session |
-| `u` | Untag selected session (shows existing tags) |
+| `Ctrl+T` | Tag selected session |
+| `Ctrl+U` | Untag selected session (shows existing tags) |
 | `Esc` | Clear filter / exit |
 | Type | Filter by project, title, branch, or tag |
 
