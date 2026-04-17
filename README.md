@@ -37,9 +37,9 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 | `Esc` | Clear filter / exit |
 | Type | Filter by project, title, branch, or tag |
 
-The preview shows session metadata, the full first prompt, and the last few user/assistant messages. Parsing happens only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
+The preview shows session metadata (project, branch, id, start/end, duration, tags, cwd), the full first prompt, and the last few user/assistant messages. Message content is parsed only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
 
-Tagged sessions show `#tag-name` at the end of the row.
+Each row shows its git branch on a dim second line under the title. Tagged sessions show `#tag-name` at the end of the first line. Titles are cleaned of XML-style command wrappers (e.g. `<local-command-caveat>`) for readability.
 
 ### Search session content
 
