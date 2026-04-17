@@ -34,6 +34,7 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 | `Space` | Preview selected session (when filter is empty) |
 | `Ctrl+T` | Tag selected session |
 | `Ctrl+U` | Untag selected session (shows existing tags) |
+| `Ctrl+R` | Rename selected session (local to agr — never modifies `~/.claude`) |
 | `Esc` | Clear filter / exit |
 | Type | Filter by project, title, branch, or tag |
 
@@ -68,6 +69,10 @@ agr tags
 
 Tags are stored in `~/.agr/tags.json` and never modify session files.
 
+### Rename (local override)
+
+Press `Ctrl+R` in the picker to rename a session. Overrides are stored in `~/.agr/titles.json` and take precedence over both the Claude Code `/rename` custom title and the auto-derived first-prompt title. An empty input clears the override. `agr` never writes to `~/.claude`, so the rename is visible only inside `agr`.
+
 ### View stats
 
 ```bash
@@ -82,7 +87,7 @@ Shows total sessions, this week's activity, total messages, and top projects.
 agr clean
 ```
 
-Reports empty sessions (0 messages) and prunes orphaned tags from `~/.agr/tags.json`. Does not modify any `~/.claude` data.
+Reports empty sessions (0 messages) and prunes orphaned entries from `~/.agr/tags.json` and `~/.agr/titles.json`. Does not modify any `~/.claude` data.
 
 ## How it works
 
@@ -92,7 +97,7 @@ Sessions are auto-titled from the first user prompt. If a session was renamed wi
 
 Active sessions (currently running) are detected via `~/.claude/sessions/*.json` and marked with a green dot in the picker.
 
-All agr data (tags) is stored in `~/.agr/`.
+All agr data (tags, title overrides) is stored in `~/.agr/`.
 
 ## Development
 

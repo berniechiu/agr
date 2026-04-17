@@ -6,6 +6,8 @@
 
 - **Session preview** — press `Space` in the picker to see a full preview: metadata (project, branch, id, start/end, duration, tags, cwd), the full first prompt, and the last few user/assistant messages. Message content is parsed lazily — only when the preview is opened — so there's no startup cost. `Esc` or `Enter` returns to the list.
 - **Branch on session rows** — each row now shows its git branch on a second dim line under the title. `HEAD` and detached-head states are filtered out.
+- **Local rename** — press `Ctrl+R` in the picker to rename a session. Overrides are stored in `~/.agr/titles.json` and take precedence over Claude Code's `/rename` title and the auto-derived first-prompt title. Empty input clears the override. agr never writes to `~/.claude`.
+- **Title scrubbing** — `custom-title` entries written by Claude Code are now run through the XML/caveat stripper, so titles generated from a slash-command transcript (e.g. `<local-command-caveat>…`) render cleanly instead of leaking wrapper tags.
 
 ### Changed
 

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import type { SessionMeta } from '../types.js';
 import { addTag, removeTag, loadTagStore } from '../tags/tag-store.js';
+import { setTitle, loadTitleStore } from '../titles/title-store.js';
 import { truncate, formatDate, cleanMessageText, isMeaningfulBranch } from '../format.js';
 import { SessionPreview } from './SessionPreview.js';
 
@@ -30,7 +31,7 @@ interface SessionPickerProps {
   onSelect: (result: PickerResult | null) => void;
 }
 
-type Mode = 'browse' | 'tagging' | 'untagging' | 'preview';
+type Mode = 'browse' | 'tagging' | 'untagging' | 'renaming' | 'preview';
 
 const PROJECT_WIDTH = 14;
 const TITLE_WIDTH = 48;
@@ -110,6 +111,43 @@ function TagPrompt({ session, onDone }: { session: SessionMeta; onDone: () => vo
       <Text color="cyan">Tag name: </Text>
       <Text>{input}</Text>
       <Text dimColor>_</Text>
+    </Box>
+  );
+}
+
+function RenamePrompt({ session, onDone }: { session: SessionMeta; onDone: () => void }) {
+  const [input, setInput] = useState('');
+  const currentTitle = displayTitle(session);
+
+  useInput((ch, key) => {
+    if (key.return) {
+      setTitle(session.id, input);
+      onDone();
+      return;
+    }
+    if (key.escape) {
+      onDone();
+      return;
+    }
+    if (key.backspace || key.delete) {
+      setInput((prev) => prev.slice(0, -1));
+      return;
+    }
+    if (ch && ch.length === 1 && ch >= ' ' && !key.ctrl && !key.meta) {
+      setInput((prev) => prev + ch);
+    }
+  });
+
+  return (
+    <Box flexDirection="column">
+      <Text>Rename session <Text color="cyan">{session.id.slice(0, 8)}</Text></Text>
+      <Text dimColor>current: {currentTitle}</Text>
+      <Box>
+        <Text color="cyan">New title: </Text>
+        <Text>{input}</Text>
+        <Text dimColor>_</Text>
+      </Box>
+      <Text dimColor>⏎ save · Esc cancel · (empty ⏎ clears override)</Text>
     </Box>
   );
 }
@@ -204,10 +242,26 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
     setSessionList(updated);
   }, [sessionList]);
 
+  const refreshTitles = useCallback(() => {
+    const store = loadTitleStore();
+    const updated = sessionList.map((s) => {
+      const override = store[s.id];
+      const next = override ?? s.firstPrompt;
+      titleCache.delete(s.id);
+      return { ...s, title: next };
+    });
+    setSessionList(updated);
+  }, [sessionList]);
+
   const handleTagDone = useCallback(() => {
     refreshTags();
     setMode('browse');
   }, [refreshTags]);
+
+  const handleRenameDone = useCallback(() => {
+    refreshTitles();
+    setMode('browse');
+  }, [refreshTitles]);
 
   useInput((ch, key) => {
     if (mode !== 'browse') return;
@@ -263,6 +317,11 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
       return;
     }
 
+    if (key.ctrl && ch === 'r' && filtered.length > 0) {
+      setMode('renaming');
+      return;
+    }
+
     if (ch === ' ' && filter === '' && filtered.length > 0) {
       setMode('preview');
       return;
@@ -282,6 +341,10 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
 
   if (mode === 'untagging' && currentSession) {
     return <UntagPrompt session={currentSession} onDone={handleTagDone} />;
+  }
+
+  if (mode === 'renaming' && currentSession) {
+    return <RenamePrompt session={currentSession} onDone={handleRenameDone} />;
   }
 
   if (mode === 'preview' && currentSession) {
@@ -313,7 +376,7 @@ export function SessionPicker({ sessions, allSessions, onSelect }: SessionPicker
 
       <Text> </Text>
       <Text dimColor>
-        ↑↓ navigate · type to filter · ⎵ preview · ⏎ resume · ^T tag · ^U untag
+        ↑↓ navigate · type to filter · ⎵ preview · ⏎ resume · ^T tag · ^U untag · ^R rename
       </Text>
     </Box>
   );

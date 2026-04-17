@@ -28,3 +28,7 @@ export function getSessionsDir(): string {
 export function getTagStorePath(): string {
   return join(getAgrDir(), 'tags.json');
 }
+
+export function getTitleStorePath(): string {
+  return join(getAgrDir(), 'titles.json');
+}

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { getProjectsDir } from '../config.js';
 import { parseSessionFile } from '../scanner/parser.js';
 import { pruneOrphanedTags } from '../tags/tag-store.js';
+import { pruneOrphanedTitles } from '../titles/title-store.js';
 import { UUID_JSONL_REGEX } from '../types.js';
 import pc from 'picocolors';
 
@@ -48,10 +49,17 @@ export async function cleanCommand(): Promise<void> {
   console.log(`  Empty sessions:    ${pc.yellow(String(emptyCount))}`);
   console.log(`  Valid sessions:    ${pc.green(String(validIds.size))}`);
 
-  const pruned = pruneOrphanedTags(validIds);
-  if (pruned > 0) {
-    console.log(pc.green(`Pruned ${pruned} orphaned tag entries.`));
+  const prunedTags = pruneOrphanedTags(validIds);
+  if (prunedTags > 0) {
+    console.log(pc.green(`Pruned ${prunedTags} orphaned tag entries.`));
   } else {
     console.log(pc.dim('No orphaned tags found.'));
+  }
+
+  const prunedTitles = pruneOrphanedTitles(validIds);
+  if (prunedTitles > 0) {
+    console.log(pc.green(`Pruned ${prunedTitles} orphaned title overrides.`));
+  } else {
+    console.log(pc.dim('No orphaned title overrides found.'));
   }
 }

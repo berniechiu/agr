@@ -2,6 +2,7 @@ import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { basename } from 'node:path';
 import type { SessionMeta } from '../types.js';
+import { cleanMessageText } from '../format.js';
 
 const MAX_TITLE_LENGTH = 80;
 
@@ -66,7 +67,9 @@ export async function parseSessionFile(
     const type = entry.type as string;
 
     if (type === 'custom-title') {
-      customTitle = (entry.customTitle as string) || null;
+      const raw = typeof entry.customTitle === 'string' ? entry.customTitle : '';
+      const cleaned = cleanMessageText(raw);
+      customTitle = cleaned.length > 0 ? cleaned : null;
     }
 
     if (type === 'user') {

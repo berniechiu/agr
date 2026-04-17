@@ -19,6 +19,10 @@ export interface TagStore {
   [sessionId: string]: string[];
 }
 
+export interface TitleStore {
+  [sessionId: string]: string;
+}
+
 export interface ActiveSession {
   pid: number;
   sessionId: string;

@@ -5,6 +5,7 @@ import { getProjectsDir } from '../config.js';
 import { parseSessionFile } from './parser.js';
 import { getActiveSessions } from './active.js';
 import { loadTagStore } from '../tags/tag-store.js';
+import { loadTitleStore } from '../titles/title-store.js';
 import { UUID_JSONL_REGEX, type SessionMeta } from '../types.js';
 
 function getCurrentBranch(): string {
@@ -34,6 +35,7 @@ export async function discoverSessions(): Promise<SessionMeta[]> {
 
   const activeSessions = getActiveSessions();
   const tagStore = loadTagStore();
+  const titleStore = loadTitleStore();
   const sessions: SessionMeta[] = [];
 
   for (const projectDir of projectDirs) {
@@ -55,6 +57,8 @@ export async function discoverSessions(): Promise<SessionMeta[]> {
 
       meta.isActive = activeSessions.has(sessionId);
       meta.tags = tagStore[sessionId] ?? [];
+      const override = titleStore[sessionId];
+      if (override) meta.title = override;
       sessions.push(meta);
     }
   }
