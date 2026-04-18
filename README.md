@@ -131,6 +131,19 @@ npm run test:watch   # Watch mode
 npm run build        # Compile TypeScript to dist/
 ```
 
+## Prior art
+
+Several tools occupy the same space. They share the core idea — scan `~/.claude/projects/`, present a pickable list — but each leans in a different direction.
+
+| Tool | Language | Focus |
+|---|---|---|
+| [cc-session](https://github.com/cc-deck/cc-session) | Rust | Instant startup (2,000+ sessions in <500ms), single-line display, background deep-search of full content, built-in conversation replay viewer with syntax highlighting |
+| [sessioner](https://github.com/topics/claude-sessions) | TypeScript | Session-graph operations: fork, merge, prune, trim; cost breakdown and tool-usage stats |
+| [claude-sessions](https://github.com/gchamon/claude-sessions) | Bash + Python | fzf-based picker, empty-session cleanup, bash-function ergonomics |
+| [csm](https://github.com/ash0x0/csm) | Go | `csm reindex` to rebuild `sessions-index.json` (repairs Claude Code's own `/resume` picker); merge, move, activity heatmap |
+
+`agr` prioritizes a terminal-native Ink/React UI, tag + local-rename overlays that never touch `~/.claude`, and the `Space` preview with files-changed / cost / recap enrichments.
+
 ## License
 
 MIT
