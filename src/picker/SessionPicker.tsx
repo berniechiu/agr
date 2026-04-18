@@ -78,6 +78,11 @@ function SessionRow({ session, isSelected }: { session: SessionMeta; isSelected:
           <Text dimColor>⎇ {branchLabel}</Text>
         </Box>
       )}
+      {session.snippet && (
+        <Box paddingLeft={BRANCH_INDENT}>
+          <Text dimColor>{session.snippet}</Text>
+        </Box>
+      )}
     </Box>
   );
 }

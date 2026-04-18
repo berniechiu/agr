@@ -281,4 +281,47 @@ describe('SessionPicker', () => {
     const frame = lastFrame()!;
     expect(frame).not.toContain('Remove which tag');
   });
+
+  it('renders a snippet line when session.snippet is present', () => {
+    const session: SessionMeta = {
+      id: 'test-id',
+      projectName: 'proj',
+      cwd: '/tmp/proj',
+      title: 'Session title',
+      baseTitle: 'Session title',
+      firstPrompt: 'p',
+      firstTimestamp: 0,
+      lastTimestamp: 0,
+      messageCount: 1,
+      filePath: '/tmp/x.jsonl',
+      tags: [],
+      isActive: false,
+      snippet: '…matched context here…',
+    };
+    const { lastFrame } = render(
+      <SessionPicker sessions={[session]} onSelect={() => {}} />
+    );
+    expect(lastFrame()).toContain('…matched context here…');
+  });
+
+  it('does not render a snippet line when session.snippet is undefined', () => {
+    const session: SessionMeta = {
+      id: 'test-id-2',
+      projectName: 'proj',
+      cwd: '/tmp/proj',
+      title: 'Another title',
+      baseTitle: 'Another title',
+      firstPrompt: 'p',
+      firstTimestamp: 0,
+      lastTimestamp: 0,
+      messageCount: 1,
+      filePath: '/tmp/y.jsonl',
+      tags: [],
+      isActive: false,
+    };
+    const { lastFrame } = render(
+      <SessionPicker sessions={[session]} onSelect={() => {}} />
+    );
+    expect(lastFrame()).not.toContain('…matched');
+  });
 });
