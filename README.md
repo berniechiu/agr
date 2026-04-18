@@ -142,7 +142,20 @@ Several tools occupy the same space. They share the core idea — scan `~/.claud
 | claude-sessions | Bash + Python | fzf-based picker, empty-session cleanup, bash-function ergonomics |
 | [csm](https://github.com/ash0x0/csm) | Go | `csm reindex` to rebuild `sessions-index.json` (repairs Claude Code's own `/resume` picker); merge, move, activity heatmap |
 
-`agr` prioritizes a terminal-native Ink/React UI, tag + local-rename overlays that never touch `~/.claude`, and the `Space` preview with files-changed / cost / recap enrichments.
+### Where `agr` leans further
+
+- **Non-destructive overlays.** Tags and local renames live in `~/.agr/`; `~/.claude` is strictly read-only. Most other tools either don't rename, or rename by rewriting the session file.
+- **Rich preview without a separate viewer.** `Space` shows files changed, estimated cost, and a last-state recap alongside metadata and recent messages, in the same picker. `cc-session` has a dedicated viewer; `csm` has `show`/`timeline`. `agr` puts that context one keypress away in the picker itself.
+- **Inline search snippets.** `agr search` shows matched context under each result row, so you can judge relevance without opening the session. `cc-session` does deep-search but surfaces matches inside the viewer; `csm search` lists sessions without per-match context.
+- **First-class tags + `#tag` picker filter.** None of the tools above treat tags as a filterable dimension in the browsing UI.
+- **Stats as a review tool, not just a counter.** `agr stats` gives week-over-week delta, streaks, a 14-day sparkline, and top projects with proportional bars — framed as "how am I spending my Claude time."
+
+### Where `agr` does less
+
+- No session-graph operations (fork, merge, prune, trim) — see `sessioner`.
+- No `sessions-index.json` repair — see `csm reindex`.
+- No in-terminal conversation replay viewer with syntax highlighting — see `cc-session`.
+- No cross-agent support (Codex, Gemini CLI, etc.) — `agr` is Claude-Code-only by design.
 
 ## License
 
