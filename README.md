@@ -4,22 +4,23 @@ A standalone CLI for browsing, searching, tagging, and resuming Claude Code sess
 
 Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.jsonl` session files directly from `~/.claude/projects/`, presents them in an inline fuzzy-filter picker, and lets you resume with a single keypress.
 
-## `agr` vs. `claude --resume`
+## Demo
 
-| Capability | `claude --resume` | `agr` |
-|---|---|---|
-| **Scope** | Current dir; `Ctrl+A` for all | All projects, ranked by folder + branch |
-| **Filter** | — | Type to fuzzy-filter; `#tag` scopes to tags |
-| **Full-text search** | — | `agr search "<text>"` across all sessions, with inline match snippets |
-| **Preview (`Space`)** | Prompt snippets | Metadata, first prompt, recent messages, **files changed, estimated cost, last-state recap** |
-| **Tagging** | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
-| **Stats** | — | `agr stats` — weekly delta, streaks, sparkline, top projects |
-| **Cleanup** | — | `agr clean` — reports empty sessions, prunes orphaned tags/titles |
+```
+> webhook_
+  ●  my-app         Fix the retry logic in the webhook handler     10/17   142 msgs
+     ⎇ feat/retries
+     my-app         Add webhook signature verification             10/14    58 msgs  #sprint-12
+     ⎇ master
+  ↑↓ navigate · type to filter (#tag) · ⎵ preview · ⏎ resume · ^T tag · ^U untag · ^R rename
+```
+
+`Space` opens a preview pane with files changed in the session, estimated cost, and a one-line recap of the last state — see [Feature overview](#feature-overview) below.
 
 ## Install
 
 ```bash
-git clone <repo-url> && cd agr
+git clone https://github.com/berniechiu/agr.git && cd agr
 npm install
 npm run build
 npm link
@@ -33,7 +34,21 @@ Requires Node.js >= 20.
 agr
 ```
 
-That's it — type to filter, `⏎` to resume. Everything else below is optional.
+Opens the picker scoped to your current project folder. Type to filter across all projects by title, project name, branch, or tag. Press `⏎` to resume. That's the whole flow — everything below is optional.
+
+## Feature overview
+
+`agr` vs. Claude Code's built-in `--resume`:
+
+| Capability | `claude --resume` | `agr` |
+|---|---|---|
+| **Scope** | Current dir; `Ctrl+A` for all | All projects, ranked by folder + branch |
+| **Filter** | — | Type to fuzzy-filter; `#tag` scopes to tags |
+| **Full-text search** | — | `agr search "<text>"` across all sessions, with inline match snippets |
+| **Preview (`Space`)** | Prompt snippets | Metadata, first prompt, recent messages, **files changed, estimated cost, last-state recap** |
+| **Tagging** | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
+| **Stats** | — | `agr stats` — weekly delta, streaks, sparkline, top projects |
+| **Cleanup** | — | `agr clean` — reports empty sessions, prunes orphaned tags/titles |
 
 ## Usage
 
@@ -51,7 +66,7 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 |-----|--------|
 | `↑↓` | Navigate sessions |
 | `⏎` | Resume selected session |
-| `Space` | Preview selected session (when filter is empty) |
+| `Space` | Preview selected session |
 | `Ctrl+T` | Tag selected session |
 | `Ctrl+U` | Untag selected session (shows existing tags) |
 | `Ctrl+R` | Rename selected session (local to agr — never modifies `~/.claude`) |
@@ -59,9 +74,20 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 | Type | Filter by project, title, branch, or tag |
 | `#tag` | Narrow to sessions with a matching tag (bare `#` lists all tagged sessions) |
 
-The preview shows session metadata (project, branch, id, start/end, duration, tags, cwd), a Files block (top files edited by count), a Cost block (estimated USD based on token usage), a Recap block (last user intent + last tool action), the full first prompt, and the last few user/assistant messages. Recap is a heuristic — not a summary of the full session — and cost uses hardcoded model rates that may drift over time. Message content is parsed only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
+`Space` is bound only when the filter is empty, so you can still type literal spaces while filtering.
 
-Each row shows its git branch on a dim second line under the title. Tagged sessions show `#tag-name` at the end of the first line. Titles are cleaned of XML-style command wrappers (e.g. `<local-command-caveat>`) for readability.
+**Preview (`Space`)** shows:
+
+- Session metadata — project, branch, id, start/end, duration, tags, cwd
+- **Files** — top files edited in the session, ranked by edit count
+- **Cost** — estimated USD based on per-turn token usage (hardcoded model rates; may drift)
+- **Recap** — last user intent + last tool action (`Edited <path>`, `Ran: <cmd>`, etc.); heuristic, not a full summary
+- The full first prompt
+- The last few user/assistant messages
+
+Content is parsed lazily — only when the preview is opened — so startup stays instant. Press `Esc` or `Enter` to return to the list.
+
+**Row layout:** each row shows its git branch on a dim second line under the title. Tagged sessions show `#tag-name` at the end of the first line. Titles are cleaned of XML-style command wrappers (e.g. `<local-command-caveat>`) for readability.
 
 ### Search session content
 
@@ -114,22 +140,31 @@ Reports empty sessions (0 messages) and prunes orphaned entries from `~/.agr/tag
 
 ## How it works
 
-`agr` reads session data directly from `~/.claude/projects/` (read-only — it never modifies `~/.claude` data). Each session is a `.jsonl` file named by UUID. The parser extracts metadata (project, first prompt, timestamps, message count, custom title, git branch) without reading the entire file.
+**Safety:** `agr` is strictly read-only against `~/.claude/`. Tags, title overrides, and any other agr state live in `~/.agr/`. Resuming a session invokes `claude --resume <id>` — `agr` never touches the session file itself.
 
-Sessions are auto-titled from the first user prompt. If a session was renamed with `/rename` in Claude Code, the custom title takes precedence.
+**Discovery:** Each session is a `.jsonl` file named by UUID under `~/.claude/projects/<project-hash>/`. The parser streams each file once and extracts metadata (project, first prompt, timestamps, message count, custom title, git branch) without loading the full content.
 
-Active sessions (currently running) are detected via `~/.claude/sessions/*.json` and marked with a green dot in the picker.
+**Titles:** auto-derived from the first user prompt. If a session was renamed with Claude Code's `/rename`, that custom title takes precedence. A local `Ctrl+R` rename in agr (stored in `~/.agr/titles.json`) overrides both.
 
-All agr data (tags, title overrides) is stored in `~/.agr/`.
+**Active sessions:** currently-running sessions are detected via `~/.claude/sessions/*.json` and marked with a green dot in the picker.
 
 ## Development
 
 ```bash
 npm run dev          # Run with tsx (no build step)
-npm test             # Run tests
+npm test             # Run tests (vitest)
 npm run test:watch   # Watch mode
 npm run build        # Compile TypeScript to dist/
 ```
+
+**Layout:**
+
+- `src/scanner/` — JSONL discovery, parsing, and preview enrichers (files / cost / recap).
+- `src/search/` — content search and snippet extraction.
+- `src/picker/` — Ink + React TUI (picker, preview pane, tag / rename prompts).
+- `src/commands/` — CLI subcommands (`search`, `tag`, `tags`, `stats`, `clean`).
+- `src/tags/`, `src/titles/` — overlays stored under `~/.agr/`.
+- `tests/` — mirrors `src/` layout. Fixtures under `tests/fixtures/` are real-shaped JSONL.
 
 ## Prior art
 
