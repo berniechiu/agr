@@ -8,15 +8,13 @@ Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.
 
 | Capability | `claude --resume` | `agr` |
 |---|---|---|
-| Scope | Current directory by default; `Ctrl+A` to show all projects | All projects by default, ranked by current-folder + branch |
-| Preview before resume | Prompt snippets | `Space` shows full metadata (project, branch, duration, cwd, tags), full first prompt, and last few user/assistant messages |
-| Tagging | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
-| Tag filter | — | `#tag` narrows to tagged sessions; bare `#` lists all tagged |
-| Preview depth | — | Files changed, estimated cost, last-state recap |
-| Search snippets | — | Match context shown inline under each result row |
-| Full-text search | — | `agr search "<text>"` streams session content |
-| Stats | — | `agr stats` — weekly delta, streaks, median/longest length, 14-day sparkline, top projects |
-| Cleanup | — | `agr clean` reports empty sessions and prunes orphaned tags/titles |
+| **Scope** | Current dir; `Ctrl+A` for all | All projects, ranked by folder + branch |
+| **Filter** | — | Type to fuzzy-filter; `#tag` scopes to tags |
+| **Full-text search** | — | `agr search "<text>"` across all sessions, with inline match snippets |
+| **Preview (`Space`)** | Prompt snippets | Metadata, first prompt, recent messages, **files changed, estimated cost, last-state recap** |
+| **Tagging** | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
+| **Stats** | — | `agr stats` — weekly delta, streaks, sparkline, top projects |
+| **Cleanup** | — | `agr clean` — reports empty sessions, prunes orphaned tags/titles |
 
 ## Install
 
