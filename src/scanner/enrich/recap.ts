@@ -1,3 +1,5 @@
+import { cleanMessageText } from '../../format.js';
+
 export type Recap = {
   lastUserIntent: string | null;
   lastToolAction: string | null;
@@ -44,9 +46,11 @@ function findLastUserIntent(lines: unknown[]): string | null {
     if (!message) continue;
     const content = message.content;
     if (isToolResultContent(content)) continue;
-    if (typeof content !== 'string' || content.trim().length === 0) continue;
+    if (typeof content !== 'string') continue;
+    const cleaned = cleanMessageText(content);
+    if (cleaned.length === 0) continue;
 
-    const text = firstLineSlice(content.trim(), USER_INTENT_MAX);
+    const text = firstLineSlice(cleaned, USER_INTENT_MAX);
     if (text.length === 0) continue;
 
     if (entry.isCompactSummary === true) {

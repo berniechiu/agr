@@ -130,11 +130,11 @@ describe('extractRecap', () => {
     expect(result.lastUserIntent).toBe('summary of yesterday');
   });
 
-  it('truncates intent at first newline and 100 chars', () => {
+  it('truncates intent at 100 chars (newlines collapsed to spaces by cleanMessageText)', () => {
     const result = extractRecap([
       userText('line one of the intent\nline two should not appear'),
     ]);
-    expect(result.lastUserIntent).toBe('line one of the intent');
+    expect(result.lastUserIntent).toBe('line one of the intent line two should not appear');
 
     const long = 'a'.repeat(200);
     const r2 = extractRecap([userText(long)]);
@@ -147,6 +147,13 @@ describe('extractRecap', () => {
       assistantTool('NotebookEdit', { notebook_path: 'nb.ipynb' }),
     ]);
     expect(result.lastToolAction).toBe('Edited nb.ipynb');
+  });
+
+  it('strips command XML wrappers from lastUserIntent', () => {
+    const result = extractRecap([
+      userText('<local-command-stdout>See ya!</local-command-stdout>'),
+    ]);
+    expect(result.lastUserIntent).toBe('See ya!');
   });
 
   it('picks the first tool_use within a single turn with multiple tools', () => {
