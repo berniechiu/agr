@@ -1,4 +1,4 @@
-# agr
+# agr (Agent Resume)
 
 A standalone CLI for browsing, searching, tagging, and resuming Claude Code sessions.
 
@@ -146,7 +146,7 @@ Several tools occupy the same space. They share the core idea — scan `~/.claud
 
 - **Non-destructive overlays.** Tags and local renames live in `~/.agr/`; `~/.claude` is strictly read-only. Most other tools either don't rename, or rename by rewriting the session file.
 - **Rich preview without a separate viewer.** `Space` shows files changed, estimated cost, and a last-state recap alongside metadata and recent messages, in the same picker. `cc-session` has a dedicated viewer; `csm` has `show`/`timeline`. `agr` puts that context one keypress away in the picker itself.
-- **Inline search snippets.** `agr search` shows matched context under each result row, so you can judge relevance without opening the session. `cc-session` does deep-search but surfaces matches inside the viewer; `csm search` lists sessions without per-match context.
+- **Inline search snippets.** `agr search "<text>"` runs content search and opens results in the same picker, with the matched phrase shown as a dim third line under each row — you can judge relevance without opening the session. `cc-session` does deep-search but surfaces matches inside the viewer; `csm search` lists sessions without per-match context. (In-picker typing still matches metadata only — title, project, branch, tag — by design; content search is a deliberate separate step.)
 - **First-class tags + `#tag` picker filter.** None of the tools above treat tags as a filterable dimension in the browsing UI.
 - **Stats as a review tool, not just a counter.** `agr stats` gives week-over-week delta, streaks, a 14-day sparkline, and top projects with proportional bars — framed as "how am I spending my Claude time."
 
