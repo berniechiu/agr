@@ -157,6 +157,15 @@ Several tools occupy the same space. They share the core idea — scan `~/.claud
 - No in-terminal conversation replay viewer with syntax highlighting — see `cc-session`.
 - No cross-agent support (Codex, Gemini CLI, etc.) — `agr` is Claude-Code-only by design.
 
+## Roadmap
+
+Ideas under consideration for future releases. Not commitments.
+
+- **In-picker content search mode.** A keybinding (e.g. `/`) to switch the picker into content-search mode, so deep-search becomes reachable without leaving the picker. Today it lives only behind the `agr search` subcommand.
+- **Session-graph awareness.** Detect fork / branch lineage from JSONL parent links and show session families in the picker.
+- **Worktree grouping.** Distinguish main checkout from `.claude/worktrees/` sessions; surface stale worktrees.
+- **Export / import.** `agr export <session>` to a portable bundle for cross-machine resume or sharing.
+
 ## License
 
 MIT
