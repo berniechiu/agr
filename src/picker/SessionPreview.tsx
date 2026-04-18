@@ -3,6 +3,11 @@ import { Box, Text } from 'ink';
 import type { SessionMeta } from '../types.js';
 import { getRecentMessages, type RecentMessage } from '../scanner/messages.js';
 import { cleanMessageBlock, formatDateTime, formatDuration, formatRelative, isMeaningfulBranch } from '../format.js';
+import { loadSessionLines } from '../scanner/enrich/load-lines.js';
+import { extractFilesTouched, type FilesTouched } from '../scanner/enrich/files.js';
+import { estimateCost, type CostEstimate } from '../scanner/enrich/cost.js';
+import { extractRecap, type Recap } from '../scanner/enrich/recap.js';
+import { formatFilesTouched, formatCost } from '../scanner/enrich/format.js';
 
 interface SessionPreviewProps {
   session: SessionMeta;
@@ -124,6 +129,28 @@ export function SessionPreview({ session, width }: SessionPreviewProps) {
     return () => { cancelled = true; };
   }, [session.filePath]);
 
+  const [enrichment, setEnrichment] = useState<{
+    files: FilesTouched;
+    cost: CostEstimate;
+    recap: Recap;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setEnrichment(null);
+    loadSessionLines(session.filePath)
+      .then((lines) => {
+        if (cancelled) return;
+        setEnrichment({
+          files: extractFilesTouched(lines),
+          cost: estimateCost(lines),
+          recap: extractRecap(lines),
+        });
+      })
+      .catch(() => { /* silently skip enrichment on load failure */ });
+    return () => { cancelled = true; };
+  }, [session.filePath]);
+
   const duration = formatDuration(session.firstTimestamp, session.lastTimestamp);
   const firstPromptClean = cleanMessageBlock(session.firstPrompt || '');
   const firstPromptLines = firstPromptClean.length > 0
@@ -169,6 +196,31 @@ export function SessionPreview({ session, width }: SessionPreviewProps) {
           </KeyValue>
         )}
       </Box>
+
+      {enrichment && (
+        <>
+          <SectionTitle label="Files" />
+          <Text>{formatFilesTouched(enrichment.files)}</Text>
+
+          <SectionTitle label="Cost" />
+          <Text>{formatCost(enrichment.cost)}</Text>
+
+          {(enrichment.recap.lastUserIntent || enrichment.recap.lastAssistantText) && (
+            <>
+              <SectionTitle label="Recap" />
+              {enrichment.recap.lastUserIntent && (
+                <Text>→ {enrichment.recap.lastUserIntent}</Text>
+              )}
+              {enrichment.recap.lastToolAction && (
+                <Text>⚙ {enrichment.recap.lastToolAction}</Text>
+              )}
+              {!enrichment.recap.lastToolAction && enrichment.recap.lastAssistantText && (
+                <Text>← {enrichment.recap.lastAssistantText}…</Text>
+              )}
+            </>
+          )}
+        </>
+      )}
 
       <SectionTitle label="First prompt" />
       <Blockquote lines={firstPromptLines} />
