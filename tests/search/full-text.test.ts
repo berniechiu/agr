@@ -46,4 +46,13 @@ describe('searchSessionFile', () => {
     );
     expect(matches.length).toBeLessThanOrEqual(2);
   });
+
+  it('attaches a matchSnippet with context around the match', async () => {
+    const matches = await searchSessionFile(
+      join(FIXTURES, 'valid-session.jsonl'),
+      'login',
+    );
+    expect(matches[0].matchSnippet).toBeTruthy();
+    expect(matches[0].matchSnippet).toContain('login');
+  });
 });

@@ -45,7 +45,7 @@ export async function searchCommand(text: string): Promise<void> {
   for (const session of scopeSessions) {
     const matches = await searchSessionFile(session.filePath, contentQuery, 5);
     if (matches.length > 0) {
-      matchingSessions.push(session);
+      matchingSessions.push({ ...session, snippet: matches[0].matchSnippet });
     }
   }
 

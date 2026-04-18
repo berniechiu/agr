@@ -14,6 +14,7 @@ export interface SessionMeta {
   filePath: string;
   tags: string[];
   isActive: boolean;
+  snippet?: string;
 }
 
 export interface TagStore {

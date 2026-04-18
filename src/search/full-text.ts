@@ -1,10 +1,12 @@
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
+import { extractSnippet } from './snippet.js';
 
 export interface SearchMatch {
   text: string;
   type: 'user' | 'assistant';
   timestamp: number;
+  matchSnippet: string;
 }
 
 function extractText(entry: Record<string, unknown>): string | null {
@@ -28,6 +30,18 @@ function extractText(entry: Record<string, unknown>): string | null {
   }
 
   return null;
+}
+
+function firstMatchRange(lower: string, words: string[]): { start: number; end: number } | null {
+  let earliest: { start: number; end: number } | null = null;
+  for (const w of words) {
+    const idx = lower.indexOf(w);
+    if (idx < 0) return null;
+    if (earliest === null || idx < earliest.start) {
+      earliest = { start: idx, end: idx + w.length };
+    }
+  }
+  return earliest;
 }
 
 export async function searchSessionFile(
@@ -60,13 +74,17 @@ export async function searchSessionFile(
     if (!text) continue;
 
     const lower = text.toLowerCase();
-    if (words.every((w) => lower.includes(w))) {
-      matches.push({
-        text: text.slice(0, 200),
-        type: type as 'user' | 'assistant',
-        timestamp: (entry.timestamp as number) ?? 0,
-      });
-    }
+    if (!words.every((w) => lower.includes(w))) continue;
+
+    const range = firstMatchRange(lower, words);
+    if (!range) continue;
+
+    matches.push({
+      text: text.slice(0, 200),
+      type: type as 'user' | 'assistant',
+      timestamp: (entry.timestamp as number) ?? 0,
+      matchSnippet: extractSnippet(text, range.start, range.end),
+    });
   }
 
   return matches;
