@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 (2026-04-19)
+
+### Added
+
+- **Files touched in preview** — the `Space` preview now shows the top files edited in the session (by `Edit` / `Write` / `MultiEdit` / `NotebookEdit` count). Read-only sessions display `no file edits`.
+- **Estimated cost in preview** — shows an estimated USD total and token counts (input + cache tokens / output) based on per-turn `usage` data in the JSONL and hardcoded model rates. Sessions without usage data or entirely unknown models display `—`.
+- **Last-state recap in preview** — distilled to the last user intent + last tool action (`Edited <path>`, `Wrote <path>`, `Ran: <cmd>`, `Delegated to agent: <desc>`). Falls back to the last assistant text when no tool action occurred. Heuristic, not a full summary.
+- **Match snippets on search results** — `agr search "<text>"` now attaches a dim third line under each result with the matched phrase in context. Browse picker (no search) is unchanged.
+
+### Changed
+
+- `SearchMatch` now carries a `matchSnippet` field. External consumers of `searchSessionFile` get the snippet for free.
+
 ## 0.2.0 (2026-04-17)
 
 ### Added

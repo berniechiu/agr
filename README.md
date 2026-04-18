@@ -12,6 +12,8 @@ Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.
 | Preview before resume | Prompt snippets | `Space` shows full metadata (project, branch, duration, cwd, tags), full first prompt, and last few user/assistant messages |
 | Tagging | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
 | Tag filter | — | `#tag` narrows to tagged sessions; bare `#` lists all tagged |
+| Preview depth | — | Files changed, estimated cost, last-state recap |
+| Search snippets | — | Match context shown inline under each result row |
 | Full-text search | — | `agr search "<text>"` streams session content |
 | Stats | — | `agr stats` — weekly delta, streaks, median/longest length, 14-day sparkline, top projects |
 | Cleanup | — | `agr clean` reports empty sessions and prunes orphaned tags/titles |
@@ -59,7 +61,7 @@ Opens an inline picker scoped to the current project folder, sorted by: current 
 | Type | Filter by project, title, branch, or tag |
 | `#tag` | Narrow to sessions with a matching tag (bare `#` lists all tagged sessions) |
 
-The preview shows session metadata (project, branch, id, start/end, duration, tags, cwd), the full first prompt, and the last few user/assistant messages. Message content is parsed only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
+The preview shows session metadata (project, branch, id, start/end, duration, tags, cwd), a Files block (top files edited by count), a Cost block (estimated USD based on token usage), a Recap block (last user intent + last tool action), the full first prompt, and the last few user/assistant messages. Recap is a heuristic — not a summary of the full session — and cost uses hardcoded model rates that may drift over time. Message content is parsed only when the preview is opened — no startup cost. Press `Esc` or `Enter` to return to the list.
 
 Each row shows its git branch on a dim second line under the title. Tagged sessions show `#tag-name` at the end of the first line. Titles are cleaned of XML-style command wrappers (e.g. `<local-command-caveat>`) for readability.
 
@@ -77,6 +79,8 @@ agr search "my-app schema migration"
 The first word selects the project scope, remaining words search session content. Words are matched independently (AND logic). With a single word, the search is scoped to the current folder.
 
 Search results open in the same picker with the same controls — you can resume, tag, or untag directly from results.
+
+Each result row shows a dim third line with the matched phrase in context, so you can see *where* the match is without opening the session.
 
 ### Tags
 
