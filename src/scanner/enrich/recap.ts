@@ -94,7 +94,7 @@ function findLastToolAction(lines: unknown[]): string | null {
     const content = message?.content;
     if (!Array.isArray(content)) continue;
 
-    for (let j = content.length - 1; j >= 0; j--) {
+    for (let j = 0; j < content.length; j++) {
       const block = content[j];
       if (!block || typeof block !== 'object') continue;
       const b = block as Record<string, unknown>;
@@ -118,7 +118,7 @@ function findLastAssistantText(lines: unknown[]): string | null {
     const content = message?.content;
     if (!Array.isArray(content)) continue;
 
-    for (let j = content.length - 1; j >= 0; j--) {
+    for (let j = 0; j < content.length; j++) {
       const block = content[j];
       if (!block || typeof block !== 'object') continue;
       const b = block as Record<string, unknown>;

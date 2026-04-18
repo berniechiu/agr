@@ -148,4 +148,24 @@ describe('extractRecap', () => {
     ]);
     expect(result.lastToolAction).toBe('Edited nb.ipynb');
   });
+
+  it('picks the first tool_use within a single turn with multiple tools', () => {
+    const result = extractRecap([
+      {
+        type: 'user',
+        message: { role: 'user', content: 'do two things' },
+      },
+      {
+        type: 'assistant',
+        message: {
+          role: 'assistant',
+          content: [
+            { type: 'tool_use', name: 'Edit', input: { file_path: 'a.ts' } },
+            { type: 'tool_use', name: 'Bash', input: { command: 'ls' } },
+          ],
+        },
+      },
+    ]);
+    expect(result.lastToolAction).toBe('Edited a.ts');
+  });
 });
