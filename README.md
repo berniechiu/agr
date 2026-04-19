@@ -196,6 +196,7 @@ Several tools occupy the same space. They share the core idea — scan `~/.claud
 
 Ideas under consideration for future releases. Not commitments.
 
+- **Support for other agents.** The core architecture is agent-agnostic; adding parsers for other JSONL formats (e.g. Gemini CLI) is straightforward. No ETA.
 - **In-picker content search mode.** A keybinding (e.g. `/`) to switch the picker into content-search mode, so deep-search becomes reachable without leaving the picker. Today it lives only behind the `agr search` subcommand.
 - **Session-graph awareness.** Detect fork / branch lineage from JSONL parent links and show session families in the picker.
 - **Worktree grouping.** Distinguish main checkout from `.claude/worktrees/` sessions; surface stale worktrees.
