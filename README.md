@@ -2,7 +2,7 @@
 
 A standalone CLI for browsing, searching, tagging, and resuming Claude Code sessions.
 
-Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.jsonl` session files directly from `~/.claude/projects/`, presents them in an inline fuzzy-filter picker, and lets you resume with a single keypress.
+Claude Code's built-in `--resume` picker is a flat chronological list — no search, no tags, no way to see what a session actually *did* without opening it. `agr` scans `.jsonl` session files directly from `~/.claude/projects/` and gives you a fuzzy-filter picker with full-text search, tagging, and a rich preview (files changed, estimated cost, last-state recap) — so you can find and resume the right session in one keypress.
 
 ## Demo
 
@@ -48,8 +48,8 @@ Opens the picker scoped to your current project folder. Type to filter across al
 
 | Capability | `claude --resume` | `agr` |
 |---|---|---|
-| **Scope** | Current dir; `Ctrl+A` for all | All projects, ranked by folder + branch |
-| **Filter** | — | Type to fuzzy-filter; `#tag` scopes to tags |
+| **Listing** | Flat chronological list | Ranked by current folder + branch, then recency |
+| **Filter** | — | Type to fuzzy-filter by title, project, branch, or `#tag` |
 | **Full-text search** | — | `agr search "<text>"` across all sessions, with inline match snippets |
 | **Preview (`Space`)** | Prompt snippets | Metadata, first prompt, recent messages, **files changed, estimated cost, last-state recap** |
 | **Tagging** | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
