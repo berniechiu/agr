@@ -1,16 +1,42 @@
 {
-  "name": "agr",
+  "name": "agr-cli",
   "version": "0.3.0",
-  "description": "Claude Code session browser CLI",
+  "description": "Claude Code session browser CLI — browse, search, tag, and resume sessions beyond the built-in 10-session limit",
   "type": "module",
   "bin": {
     "agr": "./bin/agr.js"
   },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "cli",
+    "session",
+    "resume",
+    "tui",
+    "ink"
+  ],
+  "license": "MIT",
+  "author": "Bernie Chiu",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/berniechiu/agr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/berniechiu/agr/issues"
+  },
+  "homepage": "https://github.com/berniechiu/agr#readme",
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {
     "commander": "^14.0.3",

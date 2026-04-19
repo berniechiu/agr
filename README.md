@@ -20,6 +20,12 @@ Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.
 ## Install
 
 ```bash
+npm install -g agr-cli
+```
+
+Or from source:
+
+```bash
 git clone https://github.com/berniechiu/agr.git && cd agr
 npm install
 npm run build
