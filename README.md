@@ -2,7 +2,7 @@
 
 A standalone CLI for browsing, searching, tagging, and resuming Claude Code sessions.
 
-Claude Code's built-in `--resume` shows only ~10 recent sessions. `agr` scans `.jsonl` session files directly from `~/.claude/projects/`, presents them in an inline fuzzy-filter picker, and lets you resume with a single keypress.
+Claude Code's built-in `--resume` picker is a flat chronological list — no search, no tags, no way to see what a session actually *did* without opening it. `agr` scans `.jsonl` session files directly from `~/.claude/projects/` and gives you a fuzzy-filter picker with full-text search, tagging, and a rich preview (files changed, estimated cost, last-state recap) — so you can find and resume the right session in one keypress.
 
 ## Demo
 
@@ -48,8 +48,8 @@ Opens the picker scoped to your current project folder. Type to filter across al
 
 | Capability | `claude --resume` | `agr` |
 |---|---|---|
-| **Scope** | Current dir; `Ctrl+A` for all | All projects, ranked by folder + branch |
-| **Filter** | — | Type to fuzzy-filter; `#tag` scopes to tags |
+| **Listing** | Flat chronological list | Ranked by current folder + branch, then recency |
+| **Filter** | — | Type to fuzzy-filter by title, project, branch, or `#tag` |
 | **Full-text search** | — | `agr search "<text>"` across all sessions, with inline match snippets |
 | **Preview (`Space`)** | Prompt snippets | Metadata, first prompt, recent messages, **files changed, estimated cost, last-state recap** |
 | **Tagging** | — | `Ctrl+T` / `Ctrl+U` in picker; `agr tag` / `agr tags` |
@@ -147,6 +147,8 @@ Reports empty sessions (0 messages) and prunes orphaned entries from `~/.agr/tag
 ## How it works
 
 **Safety:** `agr` is strictly read-only against `~/.claude/`. Tags, title overrides, and any other agr state live in `~/.agr/`. Resuming a session invokes `claude --resume <id>` — `agr` never touches the session file itself.
+
+**Branch on resume:** if the selected session has a recorded git branch, `agr` checks it out in the session's project folder before resuming, so the working tree matches the conversation. If the working tree is dirty, `agr` aborts with an error — commit, stash, or discard your changes and try again. If the recorded branch no longer exists locally, `agr` warns and resumes on whatever branch is currently checked out. Sessions without a recorded branch (or whose project folder isn't a git repo) resume unchanged.
 
 **Discovery:** Each session is a `.jsonl` file named by UUID under `~/.claude/projects/<project-hash>/`. The parser streams each file once and extracts metadata (project, first prompt, timestamps, message count, custom title, git branch) without loading the full content.
 
