@@ -148,6 +148,8 @@ Reports empty sessions (0 messages) and prunes orphaned entries from `~/.agr/tag
 
 **Safety:** `agr` is strictly read-only against `~/.claude/`. Tags, title overrides, and any other agr state live in `~/.agr/`. Resuming a session invokes `claude --resume <id>` — `agr` never touches the session file itself.
 
+**Branch on resume:** if the selected session has a recorded git branch, `agr` checks it out in the session's project folder before resuming, so the working tree matches the conversation. If the working tree is dirty, `agr` aborts with an error — commit, stash, or discard your changes and try again. If the recorded branch no longer exists locally, `agr` warns and resumes on whatever branch is currently checked out. Sessions without a recorded branch (or whose project folder isn't a git repo) resume unchanged.
+
 **Discovery:** Each session is a `.jsonl` file named by UUID under `~/.claude/projects/<project-hash>/`. The parser streams each file once and extracts metadata (project, first prompt, timestamps, message count, custom title, git branch) without loading the full content.
 
 **Titles:** auto-derived from the first user prompt. If a session was renamed with Claude Code's `/rename`, that custom title takes precedence. A local `Ctrl+R` rename in agr (stored in `~/.agr/titles.json`) overrides both.

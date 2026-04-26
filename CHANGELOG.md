@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0 (2026-04-26)
+
+### Added
+
+- **Auto-checkout branch on resume** — when a session has a recorded git branch, `agr` now checks it out in the session's `cwd` before invoking `claude --resume`, so the resumed conversation always lands on the matching code state. Aborts with a clear error (exit 1) if the working tree is dirty; warns and resumes on the current branch if the recorded branch no longer exists locally; silently no-ops when the session has no branch or `cwd` isn't a git repo.
+
+### Changed
+
+- Resuming a session may now switch the working tree of the repo at `session.cwd`. This persists after `agr` exits — by design, but worth knowing if you launch `agr` from inside a project repo.
+
 ## 0.3.0 (2026-04-19)
 
 ### Added
